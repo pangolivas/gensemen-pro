@@ -653,7 +653,7 @@ const LoginScreen = ({ onLogin }) => {
 };
 
 // ==================== SIDEBAR ====================
-const Sidebar = ({ activeModule, setActiveModule, user, onLogout, syncStatus = 'local', firebaseEnabled = false, isOpen, onClose }) => {
+const Sidebar = ({ activeModule, setActiveModule, user, onLogout, syncStatus = 'local', firebaseEnabled = false }) => {
   const role = ROLES[user.role];
   
   // Indicador de estado de sincronización
@@ -770,33 +770,14 @@ const Sidebar = ({ activeModule, setActiveModule, user, onLogout, syncStatus = '
   };
 
   return (
-    <>
-      {/* Backdrop para móvil */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-          onClick={onClose}
-        />
-      )}
-      
-      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 flex flex-col z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
-        {/* Botón cerrar en móvil */}
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 md:hidden"
-        >
-          <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-        
-        {/* Logo */}
-        <div className="p-5 border-b border-gray-200 bg-emerald-700">
-          <div className="flex flex-col items-center gap-2">
-            <LogoCompleto className="h-16" />
-            <p className="text-xs text-emerald-200">Sistema de Gestión</p>
-          </div>
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 flex flex-col z-40">
+      {/* Logo */}
+      <div className="p-5 border-b border-gray-200 bg-emerald-700">
+        <div className="flex flex-col items-center gap-2">
+          <LogoCompleto className="h-16" />
+          <p className="text-xs text-emerald-200">Sistema de Gestión</p>
         </div>
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
@@ -837,7 +818,6 @@ const Sidebar = ({ activeModule, setActiveModule, user, onLogout, syncStatus = '
         </button>
       </div>
     </aside>
-    </>
   );
 };
 
@@ -920,7 +900,7 @@ const DashboardModule = ({ inventory = [], toros = [], compras = [], ventas = []
       </div>
 
       {/* Stats principales - Inventario y Cuentas (siempre totales) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard title="Total Pajillas" value={totalPajillas.toLocaleString()} icon={Icons.Tank} compact />
         <StatCard title="Valor Inventario" value={formatCurrency(valorInventario)} icon={Icons.Finanzas} compact />
         <StatCard title="Cuentas por Cobrar" value={formatCurrency(totalCxC)} icon={Icons.CxC} compact />
@@ -928,7 +908,7 @@ const DashboardModule = ({ inventory = [], toros = [], compras = [], ventas = []
       </div>
 
       {/* Stats del período seleccionado */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard 
           title={`Ventas ${selectedPeriod === 'all' ? 'Totales' : 'del Período'}`} 
           value={formatCurrency(totalVentasPeriodo)} 
@@ -959,7 +939,7 @@ const DashboardModule = ({ inventory = [], toros = [], compras = [], ventas = []
       </div>
 
       {/* Alertas y Top Toros */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {/* Alertas de Stock Bajo */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -1013,7 +993,7 @@ const DashboardModule = ({ inventory = [], toros = [], compras = [], ventas = []
       </div>
 
       {/* CxC y CxP Pendientes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {/* CxC Pendientes */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-3">
@@ -1068,7 +1048,7 @@ const DashboardModule = ({ inventory = [], toros = [], compras = [], ventas = []
       </div>
 
       {/* Resumen de Termos e Inventario */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {/* Resumen de Termos */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -1330,7 +1310,7 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
       </div>
 
       {/* Stats - 3 en una fila */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <StatCard title="Total Pajillas" value={totalPajillas.toLocaleString()} icon={Icons.Tank} compact />
         <StatCard title="Termos en Uso" value={termosEnUso} icon={Icons.Inventory} compact />
         <StatCard title="Toros Registrados" value={torosRegistrados} icon={Icons.List} compact />
@@ -1549,11 +1529,11 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <Input label="Termo #" type="number" value={form.termo} onChange={(v) => setForm({...form, termo: v})} min="1" required />
             <Input label="Canastilla #" type="number" value={form.canastilla} onChange={(v) => setForm({...form, canastilla: v})} min="1" required />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <Input label="Cantidad Pajillas" type="number" value={form.cantidad} onChange={(v) => setForm({...form, cantidad: v})} min="0" required />
             <Input label="Costo Unitario $" type="number" value={form.costoUnitario} onChange={(v) => setForm({...form, costoUnitario: v})} min="0" step="0.01" required />
           </div>
@@ -1604,7 +1584,7 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
               required 
             />
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <Select 
                 label="Termo destino" 
                 value={moveForm.termo} 
@@ -1935,7 +1915,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard title={`Compras ${getPeriodLabel(selectedPeriod)}`} value={formatCurrency(totalPeriodo)} icon={Icons.Cart} compact />
         <StatCard title="Pendiente de Pago" value={formatCurrency(pendientePago)} icon={Icons.CxP} compact />
         <StatCard title="Transacciones" value={comprasFiltradas.length} icon={Icons.List} compact />
@@ -2022,7 +2002,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nueva Compra" size="lg">
         <div className="space-y-4" onClick={() => { setShowProveedorDropdown(false); closeAllToroDropdowns(); }}>
           {/* Proveedor y Fecha */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">Proveedor <span className="text-red-500">*</span></label>
               <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -2240,7 +2220,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
             onChange={(v) => setNuevoProveedorForm({...nuevoProveedorForm, contacto: v})} 
             placeholder="Persona de contacto" 
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <Input 
               label="Teléfono" 
               value={nuevoProveedorForm.telefono} 
@@ -2301,7 +2281,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
         {selectedCompra && (
           <div className="space-y-4">
             {/* Header */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
               <div>
                 <p className="text-xs text-gray-500">Proveedor</p>
                 <p className="font-semibold text-gray-900">{getProveedor(selectedCompra.proveedorId)?.nombre}</p>
@@ -2765,7 +2745,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard title={`Ventas ${getPeriodLabel(selectedPeriod)}`} value={formatCurrency(totalPeriodo)} icon={Icons.Transactions} compact />
         <StatCard title="Pendiente de Cobro" value={formatCurrency(pendienteCobro)} icon={Icons.CxC} compact />
         <StatCard title="Transacciones" value={ventasFiltradas.length} icon={Icons.List} compact />
@@ -2852,7 +2832,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nueva Venta" size="lg">
         <div className="space-y-4" onClick={() => { setShowClienteDropdown(false); closeAllToroDropdowns(); }}>
           {/* Cliente y Fecha */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">Cliente <span className="text-red-500">*</span></label>
               <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -3090,7 +3070,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
             onChange={(v) => setNuevoClienteForm({...nuevoClienteForm, contacto: v})} 
             placeholder="Persona de contacto" 
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <Input 
               label="Teléfono" 
               value={nuevoClienteForm.telefono} 
@@ -3119,7 +3099,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
         {selectedVenta && (
           <div className="space-y-4">
             {/* Header */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
               <div>
                 <p className="text-xs text-gray-500">Cliente</p>
                 <p className="font-semibold text-gray-900">{getCliente(selectedVenta.clienteId)?.nombre}</p>
@@ -3376,7 +3356,7 @@ const CxCModule = ({ cxc, setCxc, ventas, setVentas, clientes }) => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <StatCard title="Total por Cobrar" value={formatCurrency(totalCxC)} icon={Icons.CxC} compact />
         <StatCard title="Cuentas Pendientes" value={cuentasPendientes} icon={Icons.List} compact />
         <StatCard title="Vencidas (+30 días)" value={cuentasVencidas} icon={Icons.Gastos} compact />
@@ -3476,7 +3456,7 @@ const CxCModule = ({ cxc, setCxc, ventas, setVentas, clientes }) => {
       <Modal isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} title="Detalle de Cuenta por Cobrar" size="md">
         {selectedCuenta && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
               <div>
                 <p className="text-xs text-gray-500">Cliente</p>
                 <p className="font-semibold text-gray-900">{getCliente(selectedCuenta.clienteId)?.nombre}</p>
@@ -3701,7 +3681,7 @@ const CxPModule = ({ cxp, setCxp, compras, setCompras, proveedores }) => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <StatCard title="Total por Pagar" value={formatCurrency(totalCxP)} icon={Icons.CxP} compact />
         <StatCard title="Cuentas Pendientes" value={cuentasPendientes} icon={Icons.List} compact />
         <StatCard title="Vencidas (+30 días)" value={cuentasVencidas} icon={Icons.Gastos} compact />
@@ -3801,7 +3781,7 @@ const CxPModule = ({ cxp, setCxp, compras, setCompras, proveedores }) => {
       <Modal isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} title="Detalle de Cuenta por Pagar" size="md">
         {selectedCuenta && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
               <div>
                 <p className="text-xs text-gray-500">Proveedor</p>
                 <p className="font-semibold text-gray-900">{getProveedor(selectedCuenta.proveedorId)?.nombre}</p>
@@ -4074,7 +4054,7 @@ const GastosModule = ({ gastos, setGastos, categorias }) => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard title={`Gastos ${getPeriodLabel(selectedPeriod)}`} value={formatCurrency(totalPeriodo)} icon={Icons.Gastos} compact />
         <StatCard title="Registros" value={gastosFiltrados.length} icon={Icons.List} compact />
         <StatCard title="Categorías Usadas" value={gastosPorCategoria.length} icon={Icons.Catalogos} compact />
@@ -4212,7 +4192,7 @@ const GastosModule = ({ gastos, setGastos, categorias }) => {
             required 
           />
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <Input 
               label="Monto" 
               type="number" 
@@ -4371,7 +4351,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     return (
       <div className="space-y-4">
         {/* Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
             <p className="text-sm text-emerald-600">Total Pajillas</p>
             <p className="text-2xl font-bold text-emerald-700">{totalPajillas.toLocaleString()}</p>
@@ -4457,7 +4437,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     return (
       <div className="space-y-4">
         {/* Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
             <p className="text-sm text-emerald-600">Total Ventas</p>
             <p className="text-2xl font-bold text-emerald-700">{formatCurrency(totalVentas)}</p>
@@ -4476,7 +4456,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {/* Por Cliente */}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 bg-gray-50 border-b font-semibold text-sm">Ventas por Cliente</div>
@@ -4602,7 +4582,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     return (
       <div className="space-y-4">
         {/* Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <p className="text-sm text-blue-600">Total Compras</p>
             <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalCompras)}</p>
@@ -4621,7 +4601,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {/* Por Proveedor */}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 bg-gray-50 border-b font-semibold text-sm">Compras por Proveedor</div>
@@ -4734,7 +4714,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     return (
       <div className="space-y-4">
         {/* Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-red-50 rounded-lg p-4 border border-red-200">
             <p className="text-sm text-red-600">Total Gastos</p>
             <p className="text-2xl font-bold text-red-700">{formatCurrency(totalGastos)}</p>
@@ -4749,7 +4729,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {/* Por Categoría */}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 bg-gray-50 border-b font-semibold text-sm">Gastos por Categoría</div>
@@ -4882,7 +4862,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         </div>
 
         {/* Indicadores */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <p className="text-sm text-gray-500">Margen Bruto</p>
             <p className={`text-2xl font-bold ${margenBruto >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
@@ -4910,7 +4890,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         </div>
 
         {/* Resumen Visual */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-emerald-50 rounded-lg p-6 border border-emerald-200 text-center">
             <Icons.Transactions />
             <p className="text-sm text-emerald-600 mt-2">Ventas</p>
@@ -4952,7 +4932,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     return (
       <div className="space-y-4">
         {/* Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
             <p className="text-sm text-emerald-600">Total CxC</p>
             <p className="text-2xl font-bold text-emerald-700">{formatCurrency(totalCxC)}</p>
@@ -4971,7 +4951,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {/* CxC */}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 bg-emerald-50 border-b font-semibold text-sm flex justify-between items-center">
@@ -5210,7 +5190,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     return (
       <div className="space-y-4">
         {/* Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
             <p className="text-sm text-emerald-600">Ingresos (Cobros)</p>
             <p className="text-2xl font-bold text-emerald-700">{formatCurrency(totalIngresos)}</p>
@@ -5235,7 +5215,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Icons.Chart /> Flujo de Caja Proyectado
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-4 mb-6">
             {proyeccion.map((p, idx) => (
               <div key={idx} className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                 <p className="text-sm text-blue-600 font-medium">{p.mes.toUpperCase()}</p>
@@ -5332,7 +5312,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         </div>
 
         {/* Indicadores de liquidez */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="font-semibold text-gray-900 mb-3">💰 Posición de Liquidez</h3>
             <div className="space-y-2">
@@ -5638,7 +5618,7 @@ const AnalisisIAModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos,
           ))}
 
           {/* Grid Principal */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {/* Predicciones de Inventario */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -5760,7 +5740,7 @@ const AnalisisIAModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos,
               <span className="text-yellow-500">💡</span> Recomendaciones Financieras
             </h3>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               {/* Acciones Prioritarias */}
               <div>
                 <p className="text-sm font-medium text-emerald-600 flex items-center gap-1 mb-2">
@@ -5899,7 +5879,7 @@ const ConfiguracionModule = ({
         <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Icons.Config /> Información del Sistema
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-500">Versión</p>
             <p className="font-semibold">GENSEMEN PRO v1.0</p>
@@ -5916,7 +5896,7 @@ const ConfiguracionModule = ({
         <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Icons.Chart /> Estadísticas de Datos
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-3 text-center">
             <p className="text-2xl font-bold text-gray-900">{stats.toros}</p>
             <p className="text-xs text-gray-500">Toros</p>
@@ -5953,7 +5933,7 @@ const ConfiguracionModule = ({
       </div>
 
       {/* Respaldo y Restauración */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {/* Exportar */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
@@ -6282,7 +6262,7 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
           <div className="space-y-4">
             <Input label="Nombre / Empresa" value={proveedorForm.nombre} onChange={(v) => setProveedorForm({...proveedorForm, nombre: v})} placeholder="Nombre del proveedor" required />
             <Input label="Contacto" value={proveedorForm.contacto} onChange={(v) => setProveedorForm({...proveedorForm, contacto: v})} placeholder="Persona de contacto" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <Input label="Teléfono" value={proveedorForm.telefono} onChange={(v) => setProveedorForm({...proveedorForm, telefono: v})} placeholder="Teléfono" />
               <Input label="Email" type="email" value={proveedorForm.email} onChange={(v) => setProveedorForm({...proveedorForm, email: v})} placeholder="correo@ejemplo.com" />
             </div>
@@ -6293,7 +6273,7 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
           <div className="space-y-4">
             <Input label="Nombre / Empresa" value={clienteForm.nombre} onChange={(v) => setClienteForm({...clienteForm, nombre: v})} placeholder="Nombre del cliente" required />
             <Input label="Contacto" value={clienteForm.contacto} onChange={(v) => setClienteForm({...clienteForm, contacto: v})} placeholder="Persona de contacto" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <Input label="Teléfono" value={clienteForm.telefono} onChange={(v) => setClienteForm({...clienteForm, telefono: v})} placeholder="Teléfono" />
               <Input label="Email" type="email" value={clienteForm.email} onChange={(v) => setClienteForm({...clienteForm, email: v})} placeholder="correo@ejemplo.com" />
             </div>
@@ -6572,7 +6552,6 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
 export default function GenSemenPro() {
   const [user, setUser] = useState(null);
   const [activeModule, setActiveModule] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [firebaseLoading, setFirebaseLoading] = useState(FIREBASE_ENABLED);
   const [syncStatus, setSyncStatus] = useState('local'); // 'local', 'syncing', 'synced', 'error'
   
@@ -6870,42 +6849,18 @@ export default function GenSemenPro() {
     }
   };
 
-  // Función para cambiar módulo y cerrar sidebar en móvil
-  const handleModuleChange = (moduleId) => {
-    setActiveModule(moduleId);
-    setSidebarOpen(false);
-  };
-
   return (
     <AuthContext.Provider value={{ user, role: ROLES[user.role] }}>
       <div className="min-h-screen bg-gray-50">
         <Sidebar 
           activeModule={activeModule} 
-          setActiveModule={handleModuleChange} 
+          setActiveModule={setActiveModule} 
           user={user} 
           onLogout={handleLogout}
           syncStatus={syncStatus}
           firebaseEnabled={FIREBASE_ENABLED}
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
         />
-        
-        {/* Header móvil con botón hamburguesa */}
-        <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-emerald-700 flex items-center px-4 z-20">
-          <button 
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg hover:bg-emerald-600 text-white"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <span className="ml-3 text-white font-medium">GENSEMEN PRO</span>
-        </div>
-        
-        <main className="md:ml-64 p-4 md:p-6 pt-18 md:pt-6">
-          {/* Espaciador para el header móvil */}
-          <div className="h-14 md:hidden"></div>
+        <main className="ml-64 p-6">
           {renderModule()}
         </main>
       </div>
