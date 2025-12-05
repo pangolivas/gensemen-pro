@@ -92,127 +92,6 @@ const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-// Función para generar comprobante PDF (abre ventana de impresión)
-const generarComprobante = (tipo, datos, entidad, items, getToro) => {
-  const logoBase64 = 'data:image/png;base64,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';
-  
-  const esCompra = tipo === 'compra';
-  const titulo = esCompra ? 'COMPROBANTE DE COMPRA' : 'COMPROBANTE DE VENTA';
-  const entidadLabel = esCompra ? 'Proveedor' : 'Cliente';
-  const totalLabel = esCompra ? 'Total Compra' : 'Total Venta';
-  
-  let itemsHTML = '';
-  let totalGeneral = 0;
-  items.forEach((item, idx) => {
-    const toro = getToro(item.toroId);
-    const subtotal = item.cantidad * item.precioUnitario;
-    totalGeneral += subtotal;
-    itemsHTML += `
-      <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${idx + 1}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${toro?.codigo || '-'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${toro?.nombre || 'Desconocido'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.cantidad}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">${formatCurrency(item.precioUnitario)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600;">${formatCurrency(subtotal)}</td>
-      </tr>
-    `;
-  });
-  
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${titulo} - ${datos.id}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #059669; padding-bottom: 20px; margin-bottom: 20px; }
-        .logo { height: 80px; }
-        .titulo { text-align: right; }
-        .titulo h1 { margin: 0; color: #059669; font-size: 20px; }
-        .titulo p { margin: 5px 0 0; color: #666; font-size: 12px; }
-        .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .info-box { background: #f9fafb; padding: 15px; border-radius: 8px; width: 48%; }
-        .info-box h3 { margin: 0 0 10px; font-size: 12px; color: #666; text-transform: uppercase; }
-        .info-box p { margin: 0; font-size: 14px; color: #111; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { background: #059669; color: white; padding: 10px 8px; text-align: left; font-size: 12px; }
-        .total-row { background: #f0fdf4; }
-        .total-row td { padding: 12px 8px; font-size: 16px; font-weight: 700; }
-        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #666; font-size: 11px; }
-        @media print {
-          body { padding: 0; }
-          .no-print { display: none; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <img src="${logoBase64}" alt="Logo" class="logo" />
-        <div class="titulo">
-          <h1>${titulo}</h1>
-          <p>Folio: ${datos.id}</p>
-          <p>Fecha: ${formatDate(datos.fecha)}</p>
-        </div>
-      </div>
-      
-      <div class="info">
-        <div class="info-box">
-          <h3>${entidadLabel}</h3>
-          <p><strong>${entidad?.nombre || 'N/A'}</strong></p>
-          ${entidad?.telefono ? `<p>Tel: ${entidad.telefono}</p>` : ''}
-          ${entidad?.email ? `<p>Email: ${entidad.email}</p>` : ''}
-        </div>
-        <div class="info-box">
-          <h3>Empresa</h3>
-          <p><strong>La Lagartija Cattle Co.</strong></p>
-          <p>GENSEMEN PRO</p>
-        </div>
-      </div>
-      
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 40px;">#</th>
-            <th style="width: 80px;">Código</th>
-            <th>Toro</th>
-            <th style="width: 60px; text-align: center;">Cant.</th>
-            <th style="width: 100px; text-align: right;">P. Unit.</th>
-            <th style="width: 100px; text-align: right;">Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHTML}
-        </tbody>
-        <tfoot>
-          <tr class="total-row">
-            <td colspan="5" style="text-align: right; padding: 12px 8px;">${totalLabel}:</td>
-            <td style="text-align: right;">${formatCurrency(datos.total)}</td>
-          </tr>
-        </tfoot>
-      </table>
-      
-      ${datos.notas ? `<p><strong>Notas:</strong> ${datos.notas}</p>` : ''}
-      
-      <div class="footer">
-        <p>La Lagartija Cattle Co. · GENSEMEN PRO · Sistema de Gestión de Inventario de Semen Bovino</p>
-        <p>Documento generado el ${new Date().toLocaleDateString('es-MX')} a las ${new Date().toLocaleTimeString('es-MX')}</p>
-      </div>
-      
-      <div class="no-print" style="text-align: center; margin-top: 20px;">
-        <button onclick="window.print()" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px;">
-          Imprimir / Guardar PDF
-        </button>
-      </div>
-    </body>
-    </html>
-  `;
-  
-  const ventana = window.open('', '_blank');
-  ventana.document.write(html);
-  ventana.document.close();
-};
-
 const getTodayISO = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -458,11 +337,6 @@ const Icons = {
       <path d="M3 3v18h18M7 16l4-4 4 4 5-6" />
     </svg>
   ),
-  Document: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
-      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-  ),
 };
 
 // ==================== COMPONENTE FILTRO DE PERÍODO ====================
@@ -682,7 +556,7 @@ const EmptyState = ({ icon: Icon, title, description, action }) => (
 );
 
 // ==================== COMPONENTE DE LOGIN ====================
-const LoginScreen = ({ onLogin, usuarios = USERS }) => {
+const LoginScreen = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -697,7 +571,7 @@ const LoginScreen = ({ onLogin, usuarios = USERS }) => {
     setError('');
     
     setTimeout(() => {
-      const user = usuarios.find(u => u.username === username && u.password === password);
+      const user = USERS.find(u => u.username === username && u.password === password);
       if (user) {
         onLogin(user);
       } else {
@@ -2513,15 +2387,8 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
               </div>
             )}
 
-            <div className="pt-4 flex gap-2">
-              <Button 
-                variant="primary" 
-                onClick={() => generarComprobante('compra', selectedCompra, getProveedor(selectedCompra.proveedorId), selectedCompra.items, getToro)}
-                className="flex-1"
-              >
-                <Icons.Document /> Comprobante
-              </Button>
-              <Button variant="secondary" onClick={() => setShowDetailModal(false)} className="flex-1">
+            <div className="pt-4">
+              <Button variant="secondary" onClick={() => setShowDetailModal(false)} className="w-full">
                 Cerrar
               </Button>
             </div>
@@ -3338,15 +3205,8 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
               </div>
             )}
 
-            <div className="pt-4 flex gap-2">
-              <Button 
-                variant="primary" 
-                onClick={() => generarComprobante('venta', selectedVenta, getCliente(selectedVenta.clienteId), selectedVenta.items, getToro)}
-                className="flex-1"
-              >
-                <Icons.Document /> Comprobante
-              </Button>
-              <Button variant="secondary" onClick={() => setShowDetailModal(false)} className="flex-1">
+            <div className="pt-4">
+              <Button variant="secondary" onClick={() => setShowDetailModal(false)} className="w-full">
                 Cerrar
               </Button>
             </div>
@@ -5981,15 +5841,11 @@ const AnalisisIAModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos,
 // Configuración Module
 const ConfiguracionModule = ({ 
   toros, proveedores, clientes, categorias, inventory, compras, ventas, cxc, cxp, gastos,
-  onExportar, onImportar, onLimpiar,
-  usuarios, onUpdateUsuario, onAddUsuario, onDeleteUsuario
+  onExportar, onImportar, onLimpiar 
 }) => {
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [importStatus, setImportStatus] = useState(null);
-  const [showUserModal, setShowUserModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [userForm, setUserForm] = useState({ username: '', password: '', name: '', role: 'ventas' });
   const fileInputRef = React.useRef(null);
 
   // Estadísticas
@@ -6140,151 +5996,6 @@ const ConfiguracionModule = ({
           )}
         </div>
       </div>
-
-      {/* Gestión de Usuarios */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-            <Icons.Users /> Gestión de Usuarios
-          </h2>
-          <Button 
-            onClick={() => {
-              setEditingUser(null);
-              setUserForm({ username: '', password: '', name: '', role: 'ventas' });
-              setShowUserModal(true);
-            }}
-            size="sm"
-          >
-            <Icons.Plus /> Nuevo Usuario
-          </Button>
-        </div>
-        
-        <div className="space-y-3">
-          {usuarios.map(user => (
-            <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <Icons.User />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500">@{user.username} · {user.role === 'admin' ? 'Administrador' : 'Ventas'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setEditingUser(user);
-                    setUserForm({ 
-                      username: user.username, 
-                      password: '', 
-                      name: user.name, 
-                      role: user.role 
-                    });
-                    setShowUserModal(true);
-                  }}
-                  className="p-2 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors"
-                  title="Editar usuario"
-                >
-                  <Icons.Edit />
-                </button>
-                {usuarios.length > 1 && (
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`¿Estás seguro de eliminar al usuario "${user.name}"?`)) {
-                        onDeleteUsuario(user.id);
-                      }
-                    }}
-                    className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-colors"
-                    title="Eliminar usuario"
-                  >
-                    <Icons.Trash />
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Modal de Usuario */}
-      <Modal
-        isOpen={showUserModal}
-        onClose={() => setShowUserModal(false)}
-        title={editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
-        size="sm"
-      >
-        <div className="space-y-4">
-          <Input
-            label="Nombre completo"
-            value={userForm.name}
-            onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-            placeholder="Ej: Juan Pérez"
-          />
-          <Input
-            label="Usuario (para login)"
-            value={userForm.username}
-            onChange={(e) => setUserForm({ ...userForm, username: e.target.value.toLowerCase().replace(/\s/g, '') })}
-            placeholder="Ej: juanperez"
-            disabled={editingUser !== null}
-          />
-          <Input
-            label={editingUser ? 'Nueva contraseña (dejar vacío para mantener)' : 'Contraseña'}
-            type="password"
-            value={userForm.password}
-            onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-            placeholder={editingUser ? '••••••••' : 'Mínimo 4 caracteres'}
-          />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-            <select
-              value={userForm.role}
-              onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="admin">Administrador (acceso completo)</option>
-              <option value="ventas">Ventas (acceso limitado)</option>
-            </select>
-          </div>
-          
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={() => {
-                if (!userForm.name || !userForm.username) {
-                  alert('Por favor completa nombre y usuario');
-                  return;
-                }
-                if (!editingUser && (!userForm.password || userForm.password.length < 4)) {
-                  alert('La contraseña debe tener al menos 4 caracteres');
-                  return;
-                }
-                
-                if (editingUser) {
-                  onUpdateUsuario(editingUser.id, {
-                    name: userForm.name,
-                    role: userForm.role,
-                    ...(userForm.password ? { password: userForm.password } : {})
-                  });
-                } else {
-                  onAddUsuario({
-                    username: userForm.username,
-                    password: userForm.password,
-                    name: userForm.name,
-                    role: userForm.role
-                  });
-                }
-                setShowUserModal(false);
-              }}
-              className="flex-1"
-            >
-              {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-            </Button>
-            <Button variant="secondary" onClick={() => setShowUserModal(false)} className="flex-1">
-              Cancelar
-            </Button>
-          </div>
-        </div>
-      </Modal>
 
       {/* Zona de Peligro */}
       <div className="bg-red-50 rounded-lg border border-red-200 p-6">
@@ -6887,7 +6598,6 @@ export default function GenSemenPro() {
   const [cxc, setCxcState] = useState(() => loadFromStorage('cxc', []));
   const [cxp, setCxpState] = useState(() => loadFromStorage('cxp', []));
   const [gastos, setGastosState] = useState(() => loadFromStorage('gastos', []));
-  const [usuarios, setUsuariosState] = useState(() => loadFromStorage('usuarios', USERS));
 
   // ==================== FUNCIONES DE FIREBASE ====================
   // Función para guardar en Firebase (descomentada cuando Firebase esté configurado)
@@ -6895,7 +6605,8 @@ export default function GenSemenPro() {
     if (!FIREBASE_ENABLED) return;
     try {
       setSyncStatus('syncing');
-      await setDoc(doc(db, 'gensemen', collectionName), { data, updatedAt: new Date().toISOString() });
+      // Descomentar cuando Firebase esté configurado:
+      // await setDoc(doc(db, 'gensemen', collectionName), { data, updatedAt: new Date().toISOString() });
       setSyncStatus('synced');
     } catch (error) {
       console.error('Error guardando en Firebase:', error);
@@ -6970,31 +6681,6 @@ export default function GenSemenPro() {
     saveToFirebase('gastos', data);
   }, [gastos, saveToFirebase]);
 
-  const setUsuarios = useCallback((newData) => {
-    const data = typeof newData === 'function' ? newData(usuarios) : newData;
-    setUsuariosState(data);
-    saveToFirebase('usuarios', data);
-  }, [usuarios, saveToFirebase]);
-
-  // Funciones de gestión de usuarios
-  const handleAddUsuario = useCallback((newUser) => {
-    const nuevoUsuario = {
-      ...newUser,
-      id: Date.now()
-    };
-    setUsuarios(prev => [...prev, nuevoUsuario]);
-  }, [setUsuarios]);
-
-  const handleUpdateUsuario = useCallback((userId, updates) => {
-    setUsuarios(prev => prev.map(u => 
-      u.id === userId ? { ...u, ...updates } : u
-    ));
-  }, [setUsuarios]);
-
-  const handleDeleteUsuario = useCallback((userId) => {
-    setUsuarios(prev => prev.filter(u => u.id !== userId));
-  }, [setUsuarios]);
-
   // ==================== LISTENERS DE FIREBASE (TIEMPO REAL) ====================
   useEffect(() => {
     if (!FIREBASE_ENABLED) {
@@ -7002,6 +6688,8 @@ export default function GenSemenPro() {
       return;
     }
 
+    // Descomentar cuando Firebase esté configurado:
+    /*
     const unsubscribers = [];
     const collections = [
       { name: 'toros', setter: setTorosState, default: initialCatalogToros },
@@ -7015,7 +6703,6 @@ export default function GenSemenPro() {
       { name: 'cxc', setter: setCxcState, default: [] },
       { name: 'cxp', setter: setCxpState, default: [] },
       { name: 'gastos', setter: setGastosState, default: [] },
-      { name: 'usuarios', setter: setUsuariosState, default: USERS },
     ];
 
     collections.forEach(({ name, setter, default: defaultValue }) => {
@@ -7023,6 +6710,7 @@ export default function GenSemenPro() {
         if (docSnap.exists()) {
           const docData = docSnap.data();
           setter(docData.data || defaultValue);
+          // También guardar en localStorage como backup
           localStorage.setItem(`gensemen_${name}`, JSON.stringify(docData.data || defaultValue));
         }
       }, (error) => {
@@ -7037,6 +6725,10 @@ export default function GenSemenPro() {
     return () => {
       unsubscribers.forEach(unsub => unsub());
     };
+    */
+    
+    // Temporalmente solo marcar como cargado (quitar cuando Firebase esté configurado)
+    setFirebaseLoading(false);
   }, []);
 
   // Guardar en localStorage cuando cambien los datos (backup local)
@@ -7051,7 +6743,6 @@ export default function GenSemenPro() {
   useEffect(() => { localStorage.setItem('gensemen_cxc', JSON.stringify(cxc)); }, [cxc]);
   useEffect(() => { localStorage.setItem('gensemen_cxp', JSON.stringify(cxp)); }, [cxp]);
   useEffect(() => { localStorage.setItem('gensemen_gastos', JSON.stringify(gastos)); }, [gastos]);
-  useEffect(() => { localStorage.setItem('gensemen_usuarios', JSON.stringify(usuarios)); }, [usuarios]);
 
   // Función para exportar todos los datos
   const exportarDatos = () => {
@@ -7143,7 +6834,7 @@ export default function GenSemenPro() {
   };
 
   if (!user) {
-    return <LoginScreen onLogin={handleLogin} usuarios={usuarios} />;
+    return <LoginScreen onLogin={handleLogin} />;
   }
 
   const renderModule = () => {
@@ -7173,7 +6864,6 @@ export default function GenSemenPro() {
           toros={toros} proveedores={proveedores} clientes={clientes} categorias={categorias}
           inventory={inventory} compras={compras} ventas={ventas} cxc={cxc} cxp={cxp} gastos={gastos}
           onExportar={exportarDatos} onImportar={importarDatos} onLimpiar={limpiarDatos}
-          usuarios={usuarios} onUpdateUsuario={handleUpdateUsuario} onAddUsuario={handleAddUsuario} onDeleteUsuario={handleDeleteUsuario}
         />;
       default:
         return <DashboardModule inventory={inventory} toros={toros} compras={compras} ventas={ventas} cxc={cxc} cxp={cxp} gastos={gastos} clientes={clientes} proveedores={proveedores} />;
