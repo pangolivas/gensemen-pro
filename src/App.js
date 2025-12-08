@@ -4753,7 +4753,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       ventasFiltradas.forEach(v => {
         const cliente = getCliente(v.clienteId);
         const estado = v.cobrado >= v.total ? 'Pagado' : 'Pendiente';
-        tablaHTML += '<tr><td>' + formatDateShort(v.fecha) + '</td><td>' + cliente.nombre + '</td><td class="text-center">' + (v.items?.length || 0) + '</td><td class="text-right">' + formatCurrency(v.total) + '</td><td class="text-right">' + formatCurrency(v.cobrado || 0) + '</td><td>' + estado + '</td></tr>';
+        tablaHTML += '<tr><td>' + formatDate(v.fecha) + '</td><td>' + cliente.nombre + '</td><td class="text-center">' + (v.items?.length || 0) + '</td><td class="text-right">' + formatCurrency(v.total) + '</td><td class="text-right">' + formatCurrency(v.cobrado || 0) + '</td><td>' + estado + '</td></tr>';
       });
       tablaHTML += '</tbody></table></div>';
       generarReporteImprimible('Reporte de Ventas', tablaHTML, selectedPeriod !== 'all' ? 'Período: ' + selectedPeriod : '');
@@ -5353,7 +5353,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         const cliente = getCliente(c.clienteId);
         const dias = calcularAntiguedad(c.fecha);
         const saldo = c.monto - (c.cobrado || 0);
-        tablaHTML += '<tr><td>' + cliente.nombre + '</td><td>' + formatDateShort(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
+        tablaHTML += '<tr><td>' + cliente.nombre + '</td><td>' + formatDate(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
       });
       tablaHTML += '</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxC</td><td class="text-right">' + formatCurrency(totalCxC) + '</td></tr></tfoot></table></div>';
       
@@ -5362,7 +5362,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         const prov = getProveedor(c.proveedorId);
         const dias = calcularAntiguedad(c.fecha);
         const saldo = c.monto - (c.pagado || 0);
-        tablaHTML += '<tr><td>' + prov.nombre + '</td><td>' + formatDateShort(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
+        tablaHTML += '<tr><td>' + prov.nombre + '</td><td>' + formatDate(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
       });
       tablaHTML += '</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxP</td><td class="text-right">' + formatCurrency(totalCxP) + '</td></tr></tfoot></table></div>';
       
