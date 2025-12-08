@@ -1404,71 +1404,21 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
   };
 
   const handleSaveInventory = () => {
-    const toroId = Number(form.toroId);
-    const termo = Number(form.termo);
-    const canastilla = Number(form.canastilla);
-    const cantidad = Number(form.cantidad);
-    const costoUnitario = Number(form.costoUnitario);
-
     if (editingItem) {
-      // Al editar, verificar si la nueva ubicación ya tiene un registro existente (diferente al que estamos editando)
-      const existingItem = inventory.find(item => 
-        item.id !== editingItem.id &&
-        item.toroId === toroId && 
-        item.termo === termo && 
-        item.canastilla === canastilla
-      );
-
-      if (existingItem) {
-        // Consolidar: sumar al existente y eliminar el que estamos editando
-        const cantidadTotal = existingItem.cantidad + cantidad;
-        const costoPromedio = ((existingItem.cantidad * existingItem.costoUnitario) + (cantidad * costoUnitario)) / cantidadTotal;
-        
-        setInventory(inventory
-          .filter(item => item.id !== editingItem.id) // Eliminar el que editamos
-          .map(item => item.id === existingItem.id 
-            ? { ...item, cantidad: cantidadTotal, costoUnitario: Math.round(costoPromedio * 100) / 100 }
-            : item
-          )
-        );
-      } else {
-        // Actualizar normalmente
-        setInventory(inventory.map(item => 
-          item.id === editingItem.id 
-            ? { ...item, toroId, termo, canastilla, cantidad, costoUnitario }
-            : item
-        ));
-      }
+      setInventory(inventory.map(item => 
+        item.id === editingItem.id 
+          ? { ...item, toroId: Number(form.toroId), termo: Number(form.termo), canastilla: Number(form.canastilla), cantidad: Number(form.cantidad), costoUnitario: Number(form.costoUnitario) }
+          : item
+      ));
     } else {
-      // Buscar si ya existe un registro con mismo toro, termo y canastilla
-      const existingItem = inventory.find(item => 
-        item.toroId === toroId && 
-        item.termo === termo && 
-        item.canastilla === canastilla
-      );
-
-      if (existingItem) {
-        // Consolidar: sumar cantidad al registro existente
-        const cantidadTotal = existingItem.cantidad + cantidad;
-        // Calcular costo promedio ponderado
-        const costoPromedio = ((existingItem.cantidad * existingItem.costoUnitario) + (cantidad * costoUnitario)) / cantidadTotal;
-        
-        setInventory(inventory.map(item => 
-          item.id === existingItem.id 
-            ? { ...item, cantidad: cantidadTotal, costoUnitario: Math.round(costoPromedio * 100) / 100 }
-            : item
-        ));
-      } else {
-        // Crear nuevo registro
-        setInventory([...inventory, {
-          id: Date.now(),
-          toroId,
-          termo,
-          canastilla,
-          cantidad,
-          costoUnitario,
-        }]);
-      }
+      setInventory([...inventory, {
+        id: Date.now(),
+        toroId: Number(form.toroId),
+        termo: Number(form.termo),
+        canastilla: Number(form.canastilla),
+        cantidad: Number(form.cantidad),
+        costoUnitario: Number(form.costoUnitario),
+      }]);
     }
     setShowModal(false);
     setForm({ toroId: '', termo: '', canastilla: '', cantidad: '', costoUnitario: '' });
@@ -1511,43 +1461,6 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
     }
   };
 
-  // Detectar duplicados (mismo toro, termo y canastilla)
-  const detectarDuplicados = () => {
-    const grupos = {};
-    inventory.forEach(item => {
-      const key = `${item.toroId}-${item.termo}-${item.canastilla}`;
-      if (!grupos[key]) grupos[key] = [];
-      grupos[key].push(item);
-    });
-    return Object.values(grupos).filter(grupo => grupo.length > 1);
-  };
-
-  const duplicados = detectarDuplicados();
-  const hayDuplicados = duplicados.length > 0;
-
-  // Consolidar todos los duplicados
-  const handleConsolidarDuplicados = () => {
-    if (!window.confirm(`Se encontraron ${duplicados.length} grupos de registros duplicados.\n\n¿Deseas consolidarlos? Los registros con mismo toro, termo y canastilla se unificarán sumando sus cantidades.`)) {
-      return;
-    }
-
-    const grupos = {};
-    inventory.forEach(item => {
-      const key = `${item.toroId}-${item.termo}-${item.canastilla}`;
-      if (!grupos[key]) {
-        grupos[key] = { ...item };
-      } else {
-        // Calcular cantidad total y costo promedio ponderado
-        const cantidadTotal = grupos[key].cantidad + item.cantidad;
-        const costoPromedio = ((grupos[key].cantidad * grupos[key].costoUnitario) + (item.cantidad * item.costoUnitario)) / cantidadTotal;
-        grupos[key].cantidad = cantidadTotal;
-        grupos[key].costoUnitario = Math.round(costoPromedio * 100) / 100;
-      }
-    });
-
-    setInventory(Object.values(grupos));
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -1555,16 +1468,9 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
           <h1 className="text-2xl font-bold text-gray-900">Inventario</h1>
           <p className="text-gray-500 text-sm">Gestión de pajillas por termo y canastilla</p>
         </div>
-        <div className="flex gap-2">
-          {hayDuplicados && (
-            <Button variant="secondary" onClick={handleConsolidarDuplicados}>
-              <Icons.Move /> Consolidar {duplicados.length} duplicados
-            </Button>
-          )}
-          <Button onClick={() => { setEditingItem(null); setForm({ toroId: '', termo: '', canastilla: '', cantidad: '', costoUnitario: '' }); setToroSearch(''); setShowModal(true); }}>
-            <Icons.Plus /> Agregar Inventario
-          </Button>
-        </div>
+        <Button onClick={() => { setEditingItem(null); setForm({ toroId: '', termo: '', canastilla: '', cantidad: '', costoUnitario: '' }); setToroSearch(''); setShowModal(true); }}>
+          <Icons.Plus /> Agregar Inventario
+        </Button>
       </div>
 
       {/* Stats - 3 en una fila */}
