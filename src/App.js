@@ -94,7 +94,8 @@ const formatCurrency = (amount) => {
 
 // Función para generar comprobante PDF (abre ventana de impresión)
 const generarComprobante = (tipo, datos, entidad, items, getToro, folio) => {
-  const logoBase64 = 'data:image/png;base64,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';
+  // Usar el logo completo de La Lagartija
+  const logoBase64 = LOGO_COMPLETO;
   
   const esCompra = tipo === 'compra';
   const titulo = esCompra ? 'COMPROBANTE DE COMPRA' : 'COMPROBANTE DE VENTA';
@@ -1285,8 +1286,22 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
   const termosEnUso = [...new Set(inventory.map(i => i.termo))].length;
   const torosRegistrados = [...new Set(inventory.map(i => i.toroId))].length;
 
-  // Agrupar por termo
-  const inventoryByTermo = inventory.reduce((acc, item) => {
+  // Filtrar inventario por searchTerm
+  const filteredInventory = inventory.filter(item => {
+    if (!searchTerm) return true;
+    const toro = getToro(item.toroId);
+    const search = searchTerm.toLowerCase();
+    return (
+      toro.codigo.toLowerCase().includes(search) ||
+      toro.nombre.toLowerCase().includes(search) ||
+      toro.raza?.toLowerCase().includes(search) ||
+      item.termo.toString().includes(search) ||
+      item.canastilla.toString().includes(search)
+    );
+  });
+
+  // Agrupar por termo (usando inventario filtrado)
+  const inventoryByTermo = filteredInventory.reduce((acc, item) => {
     if (!acc[item.termo]) acc[item.termo] = [];
     acc[item.termo].push(item);
     return acc;
@@ -1505,7 +1520,7 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
       {/* Inventory Display */}
       {viewMode === 'termo' ? (
         <div className="space-y-3">
-          <p className="text-sm text-gray-500">Items de Inventario ({inventory.length})</p>
+          <p className="text-sm text-gray-500">Items de Inventario ({filteredInventory.length}{searchTerm ? ` de ${inventory.length}` : ''})</p>
           {Object.entries(inventoryByTermo).sort(([a], [b]) => Number(a) - Number(b)).map(([termo, items]) => {
             const termoTotal = items.reduce((s, i) => s + i.cantidad, 0);
             const isExpanded = expandedTermos.includes(Number(termo));
@@ -1608,7 +1623,7 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {inventory.map((item) => {
+                {filteredInventory.map((item) => {
                   const toro = getToro(item.toroId);
                   return (
                     <tr key={item.id} className="hover:bg-gray-50 transition-colors">
@@ -1787,6 +1802,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
   const [fecha, setFecha] = useState(getTodayISO());
   const [items, setItems] = useState([{ id: 1, toroId: '', toroSearch: '', showToroDropdown: false, cantidad: '', precioUnitario: '', termo: '1', canastilla: '1' }]);
   const [montoPagado, setMontoPagado] = useState('');
+  const [metodoPago, setMetodoPago] = useState('Efectivo');
   const [notas, setNotas] = useState('');
   
   // Form para nuevo proveedor
@@ -1886,6 +1902,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
     setFecha(getTodayISO());
     setItems([{ id: 1, toroId: '', toroSearch: '', showToroDropdown: false, cantidad: '', precioUnitario: '', termo: '1', canastilla: '1' }]);
     setMontoPagado('');
+    setMetodoPago('Efectivo');
     setNotas('');
   };
   
@@ -1989,7 +2006,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
       total,
       pagado,
       notas,
-      abonos: pagado > 0 ? [{ id: Date.now(), fecha, monto: pagado, metodo: 'Pago inicial', notas: '' }] : [],
+      abonos: pagado > 0 ? [{ id: Date.now(), fecha, monto: pagado, metodo: metodoPago, notas: 'Pago inicial' }] : [],
     };
 
     setCompras([...compras, newCompra]);
@@ -2204,8 +2221,8 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
             <div className="space-y-3">
               {items.map((item, index) => (
                 <div key={item.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                  <div className="flex gap-3 items-start">
-                    {/* Toro selector */}
+                  {/* Fila 1: Toro (siempre full width en móvil) */}
+                  <div className="flex gap-2 items-start">
                     <div className="flex-1 relative" onClick={(e) => e.stopPropagation()}>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Toro</label>
                       <input
@@ -2216,8 +2233,8 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
                           closeAllToroDropdowns();
                           handleItemChange(index, 'showToroDropdown', true);
                         }}
-                        placeholder="Seleccionar toro..."
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                        placeholder="Buscar toro..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                       />
                       {item.showToroDropdown && (
                         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto">
@@ -2240,8 +2257,20 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
                       )}
                     </div>
                     
+                    {/* Eliminar */}
+                    <div className="pt-5">
+                      {items.length > 1 && (
+                        <button onClick={() => removeItem(index)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+                          <Icons.X />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Fila 2: Cantidad, Precio, Subtotal (grid responsive) */}
+                  <div className="grid grid-cols-3 gap-2 mt-2">
                     {/* Cantidad */}
-                    <div className="w-20">
+                    <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Cantidad</label>
                       <input
                         type="number"
@@ -2253,7 +2282,7 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
                     </div>
                     
                     {/* Precio */}
-                    <div className="w-24">
+                    <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Precio Unit.</label>
                       <input
                         type="number"
@@ -2266,18 +2295,9 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
                     </div>
                     
                     {/* Subtotal */}
-                    <div className="w-24 text-right">
+                    <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Subtotal</label>
-                      <p className="py-1.5 text-sm font-semibold text-gray-900">{formatCurrency(calcularSubtotal(item))}</p>
-                    </div>
-                    
-                    {/* Eliminar */}
-                    <div className="pt-5">
-                      {items.length > 1 && (
-                        <button onClick={() => removeItem(index)} className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
-                          <Icons.X />
-                        </button>
-                      )}
+                      <p className="py-1.5 text-sm font-semibold text-gray-900 text-center">{formatCurrency(calcularSubtotal(item))}</p>
                     </div>
                   </div>
                   
@@ -2325,6 +2345,21 @@ const ComprasModule = ({ inventory, setInventory, toros, setToros, proveedores, 
                 className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
+            {Number(montoPagado) > 0 && (
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm text-gray-600">Método de Pago</span>
+                <select
+                  value={metodoPago}
+                  onChange={(e) => setMetodoPago(e.target.value)}
+                  className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                  <option value="Cheque">Cheque</option>
+                  <option value="Tarjeta">Tarjeta</option>
+                </select>
+              </div>
+            )}
             <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
               <span className="text-gray-600">Saldo Pendiente</span>
               <span className={`font-bold ${calcularSaldoPendiente() > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
@@ -2605,6 +2640,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
   const [fecha, setFecha] = useState(getTodayISO());
   const [items, setItems] = useState([{ id: 1, toroId: '', toroSearch: '', showToroDropdown: false, inventoryId: '', cantidad: '', precioUnitario: '', stockDisponible: 0, ubicaciones: [] }]);
   const [montoCobrado, setMontoCobrado] = useState('');
+  const [metodoCobro, setMetodoCobro] = useState('Efectivo');
   const [notas, setNotas] = useState('');
   
   // Form para nuevo cliente
@@ -2730,6 +2766,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
     setFecha(getTodayISO());
     setItems([{ id: 1, toroId: '', toroSearch: '', showToroDropdown: false, inventoryId: '', cantidad: '', precioUnitario: '', stockDisponible: 0, ubicaciones: [] }]);
     setMontoCobrado('');
+    setMetodoCobro('Efectivo');
     setNotas('');
   };
   
@@ -2774,7 +2811,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
       total,
       cobrado,
       notas,
-      abonos: cobrado > 0 ? [{ id: Date.now(), fecha, monto: cobrado, metodo: 'Pago inicial', notas: '' }] : [],
+      abonos: cobrado > 0 ? [{ id: Date.now(), fecha, monto: cobrado, metodo: metodoCobro, notas: 'Pago inicial' }] : [],
     };
 
     setVentas([...ventas, newVenta]);
@@ -3041,9 +3078,9 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
             <div className="space-y-3">
               {items.map((item, index) => (
                 <div key={item.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                  <div className="flex gap-3 items-start">
-                    {/* Toro selector */}
-                    <div className="w-56 relative" onClick={(e) => e.stopPropagation()}>
+                  {/* Fila 1: Toro (full width) + botón eliminar */}
+                  <div className="flex gap-2 items-start">
+                    <div className="flex-1 relative" onClick={(e) => e.stopPropagation()}>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Toro</label>
                       <input
                         type="text"
@@ -3053,11 +3090,11 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
                           closeAllToroDropdowns();
                           setTimeout(() => handleItemChange(index, 'showToroDropdown', true), 10);
                         }}
-                        placeholder="Seleccionar toro..."
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                        placeholder="Buscar toro..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                       />
                       {item.showToroDropdown && (
-                        <div className="absolute z-50 w-72 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto">
                           {getFilteredToros(item.toroSearch).length === 0 ? (
                             <p className="px-3 py-2 text-sm text-gray-500">No hay toros con stock disponible</p>
                           ) : (
@@ -3088,8 +3125,24 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
                       )}
                     </div>
                     
+                    {/* Eliminar */}
+                    <div className="pt-5">
+                      {items.length > 1 && (
+                        <button 
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); removeItem(index); }} 
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                        >
+                          <Icons.X />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Fila 2: Ubicación, Cantidad, Precio, Subtotal (grid responsive) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                     {/* Ubicación */}
-                    <div className="w-28">
+                    <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Ubicación *</label>
                       <select
                         value={item.inventoryId}
@@ -3107,7 +3160,7 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
                     </div>
                     
                     {/* Cantidad */}
-                    <div className="w-20">
+                    <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Cantidad</label>
                       <input
                         type="number"
@@ -3123,12 +3176,12 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
                         }`}
                       />
                       {item.cantidad && Number(item.cantidad) > getStockUbicacion(item.inventoryId) && (
-                        <p className="text-xs text-red-500 mt-1">Excede stock</p>
+                        <p className="text-xs text-red-500 mt-0.5">Excede</p>
                       )}
                     </div>
                     
                     {/* Precio */}
-                    <div className="w-24">
+                    <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Precio Unit.</label>
                       <input
                         type="number"
@@ -3141,22 +3194,9 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
                     </div>
                     
                     {/* Subtotal */}
-                    <div className="w-24 text-right">
+                    <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Subtotal</label>
-                      <p className="py-1.5 text-sm font-semibold text-gray-900">{formatCurrency(calcularSubtotal(item))}</p>
-                    </div>
-                    
-                    {/* Eliminar */}
-                    <div className="pt-5">
-                      {items.length > 1 && (
-                        <button 
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); removeItem(index); }} 
-                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-                        >
-                          <Icons.X />
-                        </button>
-                      )}
+                      <p className="py-1.5 text-sm font-semibold text-gray-900 text-center">{formatCurrency(calcularSubtotal(item))}</p>
                     </div>
                   </div>
                 </div>
@@ -3182,6 +3222,21 @@ const VentasModule = ({ inventory, setInventory, toros, clientes, setClientes, v
                 className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
+            {Number(montoCobrado) > 0 && (
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm text-gray-600">Método de Cobro</span>
+                <select
+                  value={metodoCobro}
+                  onChange={(e) => setMetodoCobro(e.target.value)}
+                  className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                  <option value="Cheque">Cheque</option>
+                  <option value="Tarjeta">Tarjeta</option>
+                </select>
+              </div>
+            )}
             <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
               <span className="text-gray-600">Saldo Pendiente</span>
               <span className={`font-bold ${calcularSaldoPendiente() > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
@@ -4491,6 +4546,80 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     { id: 'flujoCaja', label: 'Flujo de Caja', icon: Icons.Chart },
   ];
 
+  // Función para generar reporte imprimible
+  const generarReporteImprimible = (titulo, contenidoHTML, subtitulo = '') => {
+    const logoBase64 = LOGO_COMPLETO;
+    const fechaGeneracion = new Date().toLocaleString('es-MX');
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${titulo} - GENSEMEN PRO</title>
+        <style>
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          @page { size: auto; margin: 10mm; }
+          @media print {
+            body { padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+          }
+          body { font-family: Arial, sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; font-size: 12px; }
+          .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #059669; padding-bottom: 15px; margin-bottom: 20px; }
+          .logo { height: 70px; }
+          .titulo { text-align: right; }
+          .titulo h1 { margin: 0; color: #059669; font-size: 18px; }
+          .titulo p { margin: 5px 0 0; color: #666; font-size: 11px; }
+          .subtitulo { background: #f0fdf4; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+          th { background-color: #059669 !important; color: white !important; padding: 8px 6px; text-align: left; font-size: 11px; }
+          td { padding: 6px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
+          tbody tr:nth-child(even) { background-color: #f9fafb !important; }
+          .total-row { background-color: #dcfce7 !important; font-weight: bold; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 14px; font-weight: 600; color: #059669; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb; }
+          .footer { text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #e5e7eb; color: #666; font-size: 10px; }
+          .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+          .stat-card { background: #f9fafb; padding: 10px; border-radius: 6px; text-align: center; }
+          .stat-value { font-size: 18px; font-weight: 700; color: #059669; }
+          .stat-label { font-size: 10px; color: #666; }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .font-bold { font-weight: 600; }
+          .text-emerald { color: #059669; }
+          .text-red { color: #dc2626; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <img src="${logoBase64}" alt="La Lagartija Cattle Co." class="logo" />
+          <div class="titulo">
+            <h1>${titulo}</h1>
+            <p>Generado: ${fechaGeneracion}</p>
+            ${subtitulo ? `<p>${subtitulo}</p>` : ''}
+          </div>
+        </div>
+        
+        ${contenidoHTML}
+        
+        <div class="footer">
+          <p><strong>La Lagartija Cattle Co.</strong> - GENSEMEN PRO</p>
+          <p>Sistema de Gestión de Semen Bovino</p>
+        </div>
+        
+        <div class="no-print" style="text-align: center; margin-top: 20px;">
+          <button onclick="window.print()" style="background: #059669; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">
+            Imprimir / Guardar PDF
+          </button>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const ventana = window.open('', '_blank');
+    ventana.document.write(html);
+    ventana.document.close();
+  };
+
   // ========== REPORTE DE INVENTARIO ==========
   const renderInventarioReport = () => {
     // Agrupar por toro
@@ -4512,8 +4641,42 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     const totalPajillas = inventory.reduce((sum, i) => sum + i.cantidad, 0);
     const valorTotal = inventory.reduce((sum, i) => sum + (i.cantidad * (i.costoUnitario || 0)), 0);
 
+    const imprimirReporte = () => {
+      let tablaHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value">${totalPajillas.toLocaleString()}</div><div class="stat-label">Total Pajillas</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(valorTotal)}</div><div class="stat-label">Valor Total</div></div>
+          <div class="stat-card"><div class="stat-value">${inventarioData.length}</div><div class="stat-label">Toros en Stock</div></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Ubicaciones</th>
+              <th class="text-right">Cantidad</th>
+              <th class="text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      inventarioData.forEach(item => {
+        const ubicaciones = item.ubicaciones.map(ub => `T${ub.termo}-C${ub.canastilla}: ${ub.cantidad}`).join(', ');
+        tablaHTML += `<tr><td>${item.codigo}</td><td>${item.nombre}</td><td>${ubicaciones}</td><td class="text-right font-bold">${item.cantidad}</td><td class="text-right">${formatCurrency(item.valor)}</td></tr>`;
+      });
+      tablaHTML += `</tbody><tfoot><tr class="total-row"><td colspan="3">TOTAL</td><td class="text-right">${totalPajillas}</td><td class="text-right">${formatCurrency(valorTotal)}</td></tr></tfoot></table>`;
+      generarReporteImprimible('Reporte de Inventario', tablaHTML);
+    };
+
     return (
       <div className="space-y-4">
+        {/* Botón Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="secondary" onClick={imprimirReporte}>
+            <Icons.Document /> Imprimir Reporte
+          </Button>
+        </div>
+
         {/* Resumen */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
@@ -4598,8 +4761,33 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return acc;
     }, {});
 
+    const imprimirReporte = () => {
+      let contenido = `
+        <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="stat-card"><div class="stat-value text-emerald">${formatCurrency(totalVentas)}</div><div class="stat-label">Total Ventas</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(totalCobrado)}</div><div class="stat-label">Cobrado</div></div>
+          <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalPendiente)}</div><div class="stat-label">Pendiente</div></div>
+          <div class="stat-card"><div class="stat-value">${ventasFiltradas.length}</div><div class="stat-label">Transacciones</div></div>
+        </div>
+        <div class="section"><div class="section-title">Detalle de Ventas</div>
+        <table><thead><tr><th>Fecha</th><th>Cliente</th><th class="text-center">Items</th><th class="text-right">Total</th><th class="text-right">Cobrado</th><th class="text-center">Estado</th></tr></thead><tbody>`;
+      ventasFiltradas.forEach(v => {
+        const estado = v.cobrado >= v.total ? 'Pagado' : 'Pendiente';
+        contenido += `<tr><td>${formatDate(v.fecha)}</td><td>${getCliente(v.clienteId).nombre}</td><td class="text-center">${v.items?.length || 0}</td><td class="text-right font-bold">${formatCurrency(v.total)}</td><td class="text-right">${formatCurrency(v.cobrado || 0)}</td><td class="text-center">${estado}</td></tr>`;
+      });
+      contenido += `</tbody><tfoot><tr class="total-row"><td colspan="3">TOTALES</td><td class="text-right">${formatCurrency(totalVentas)}</td><td class="text-right">${formatCurrency(totalCobrado)}</td><td></td></tr></tfoot></table></div>`;
+      generarReporteImprimible('Reporte de Ventas', contenido, selectedPeriod !== 'all' ? `Período: ${selectedPeriod}` : '');
+    };
+
     return (
       <div className="space-y-4">
+        {/* Botón Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="secondary" onClick={imprimirReporte}>
+            <Icons.Document /> Imprimir Reporte
+          </Button>
+        </div>
+
         {/* Resumen */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
@@ -4743,8 +4931,33 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return acc;
     }, {});
 
+    const imprimirReporte = () => {
+      let tablaHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value">${formatCurrency(totalCompras)}</div><div class="stat-label">Total Compras</div></div>
+          <div class="stat-card"><div class="stat-value text-emerald">${formatCurrency(totalPagado)}</div><div class="stat-label">Pagado</div></div>
+          <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalPendiente)}</div><div class="stat-label">Pendiente</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Compras por Proveedor</div>
+          <table><thead><tr><th>Proveedor</th><th class="text-center">Compras</th><th class="text-right">Total</th></tr></thead><tbody>
+      `;
+      Object.entries(comprasByProveedor).forEach(([id, data]) => {
+        const prov = getProveedor(Number(id));
+        tablaHTML += `<tr><td>${prov.nombre}</td><td class="text-center">${data.count}</td><td class="text-right">${formatCurrency(data.total)}</td></tr>`;
+      });
+      tablaHTML += `</tbody></table></div>`;
+      generarReporteImprimible('Reporte de Compras', tablaHTML, selectedPeriod !== 'all' ? `Período: ${selectedPeriod}` : '');
+    };
+
     return (
       <div className="space-y-4">
+        {/* Botón Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="secondary" onClick={imprimirReporte}>
+            <Icons.Document /> Imprimir Reporte
+          </Button>
+        </div>
         {/* Resumen */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
@@ -4875,8 +5088,35 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return acc;
     }, {});
 
+    const imprimirReporte = () => {
+      let tablaHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalGastos)}</div><div class="stat-label">Total Gastos</div></div>
+          <div class="stat-card"><div class="stat-value">${gastosFiltrados.length}</div><div class="stat-label">Registros</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(gastosFiltrados.length > 0 ? totalGastos / gastosFiltrados.length : 0)}</div><div class="stat-label">Promedio</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Gastos por Categoría</div>
+          <table><thead><tr><th>Categoría</th><th class="text-right">Registros</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>
+      `;
+      Object.entries(gastosByCategoria).forEach(([id, data]) => {
+        const cat = getCategoria(Number(id));
+        const porcentaje = totalGastos > 0 ? ((data.total / totalGastos) * 100).toFixed(1) : 0;
+        tablaHTML += `<tr><td>${cat.nombre}</td><td class="text-right">${data.count}</td><td class="text-right">${formatCurrency(data.total)}</td><td class="text-right">${porcentaje}%</td></tr>`;
+      });
+      tablaHTML += `</tbody></table></div>`;
+      generarReporteImprimible('Reporte de Gastos', tablaHTML, selectedPeriod !== 'all' ? `Período: ${selectedPeriod}` : '');
+    };
+
     return (
       <div className="space-y-4">
+        {/* Botón Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="secondary" onClick={imprimirReporte}>
+            <Icons.Document /> Imprimir Reporte
+          </Button>
+        </div>
+
         {/* Resumen */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div className="bg-red-50 rounded-lg p-4 border border-red-200">
@@ -4990,8 +5230,37 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     const margenBruto = totalVentas > 0 ? (utilidadBruta / totalVentas) * 100 : 0;
     const margenNeto = totalVentas > 0 ? (utilidadNeta / totalVentas) * 100 : 0;
 
+    const imprimirReporte = () => {
+      const tablaHTML = `
+        <div class="section">
+          <div class="section-title">Estado de Resultados</div>
+          <table>
+            <tbody>
+              <tr><td>Ingresos por Ventas</td><td class="text-right text-emerald">${formatCurrency(totalVentas)}</td></tr>
+              <tr><td>(-) Costo de Ventas (Compras)</td><td class="text-right text-red">-${formatCurrency(totalCompras)}</td></tr>
+              <tr class="total-row"><td>Utilidad Bruta</td><td class="text-right">${formatCurrency(utilidadBruta)}</td></tr>
+              <tr><td>(-) Gastos Operativos</td><td class="text-right text-red">-${formatCurrency(totalGastos)}</td></tr>
+              <tr class="total-row"><td><strong>Utilidad Neta</strong></td><td class="text-right ${utilidadNeta >= 0 ? 'text-emerald' : 'text-red'}"><strong>${formatCurrency(utilidadNeta)}</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value">${margenBruto.toFixed(1)}%</div><div class="stat-label">Margen Bruto</div></div>
+          <div class="stat-card"><div class="stat-value ${utilidadNeta >= 0 ? 'text-emerald' : 'text-red'}">${margenNeto.toFixed(1)}%</div><div class="stat-label">Margen Neto</div></div>
+        </div>
+      `;
+      generarReporteImprimible('Reporte Financiero', tablaHTML, selectedPeriod !== 'all' ? `Período: ${selectedPeriod}` : '');
+    };
+
     return (
       <div className="space-y-4">
+        {/* Botón Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="secondary" onClick={imprimirReporte}>
+            <Icons.Document /> Imprimir Reporte
+          </Button>
+        </div>
+
         {/* Estado de Resultados */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 bg-gray-50 border-b font-semibold">Estado de Resultados</div>
@@ -5093,8 +5362,47 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return dias;
     };
 
+    const imprimirReporte = () => {
+      let tablaHTML = `
+        <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="stat-card"><div class="stat-value text-emerald">${formatCurrency(totalCxC)}</div><div class="stat-label">Total CxC</div></div>
+          <div class="stat-card"><div class="stat-value">${cxcPendientes.length}</div><div class="stat-label">Cuentas CxC</div></div>
+          <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalCxP)}</div><div class="stat-label">Total CxP</div></div>
+          <div class="stat-card"><div class="stat-value">${cxpPendientes.length}</div><div class="stat-label">Cuentas CxP</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Cuentas por Cobrar (CxC)</div>
+          <table><thead><tr><th>Cliente</th><th>Fecha</th><th class="text-center">Días</th><th class="text-right">Saldo</th></tr></thead><tbody>
+      `;
+      cxcPendientes.sort((a, b) => a.fecha.localeCompare(b.fecha)).forEach(c => {
+        const cliente = getCliente(c.clienteId);
+        const dias = calcularAntiguedad(c.fecha);
+        const saldo = c.monto - (c.cobrado || 0);
+        tablaHTML += `<tr><td>${cliente.nombre}</td><td>${formatDateShort(c.fecha)}</td><td class="text-center">${dias}</td><td class="text-right">${formatCurrency(saldo)}</td></tr>`;
+      });
+      tablaHTML += `</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxC</td><td class="text-right">${formatCurrency(totalCxC)}</td></tr></tfoot></table></div>`;
+      
+      tablaHTML += `<div class="section"><div class="section-title">Cuentas por Pagar (CxP)</div><table><thead><tr><th>Proveedor</th><th>Fecha</th><th class="text-center">Días</th><th class="text-right">Saldo</th></tr></thead><tbody>`;
+      cxpPendientes.sort((a, b) => a.fecha.localeCompare(b.fecha)).forEach(c => {
+        const prov = getProveedor(c.proveedorId);
+        const dias = calcularAntiguedad(c.fecha);
+        const saldo = c.monto - (c.pagado || 0);
+        tablaHTML += `<tr><td>${prov.nombre}</td><td>${formatDateShort(c.fecha)}</td><td class="text-center">${dias}</td><td class="text-right">${formatCurrency(saldo)}</td></tr>`;
+      });
+      tablaHTML += `</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxP</td><td class="text-right">${formatCurrency(totalCxP)}</td></tr></tfoot></table></div>`;
+      
+      generarReporteImprimible('Reporte de Cuentas por Cobrar / Pagar', tablaHTML);
+    };
+
     return (
       <div className="space-y-4">
+        {/* Botón Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="secondary" onClick={imprimirReporte}>
+            <Icons.Document /> Imprimir Reporte
+          </Button>
+        </div>
+
         {/* Resumen */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
@@ -5245,46 +5553,30 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return `${months[parseInt(month) - 1]} ${year.slice(-2)}`;
     };
 
-    // Calcular ingresos por mes (cobros reales de ventas)
+    // Calcular ingresos por mes (TODOS los cobros de ventas incluyendo abonos)
     const cobrosByMonth = {};
-    cxc.forEach(c => {
-      (c.cobros || []).forEach(cobro => {
-        const key = getMonthKey(cobro.fecha);
-        if (key) {
-          cobrosByMonth[key] = (cobrosByMonth[key] || 0) + cobro.monto;
-        }
-      });
-    });
-
-    // Ventas de contado (pagadas inmediatamente)
+    
+    // Cobros desde abonos de ventas (incluye pagos iniciales y abonos posteriores)
     ventas.forEach(v => {
-      if (v.cobrado >= v.total) {
-        const key = getMonthKey(v.fecha);
-        if (key && !cxc.find(c => c.ventaId === v.id)) {
-          cobrosByMonth[key] = (cobrosByMonth[key] || 0) + v.total;
-        }
-      }
-    });
-
-    // Calcular egresos por mes (pagos reales de compras + gastos)
-    const pagosByMonth = {};
-    cxp.forEach(c => {
-      (c.pagos || []).forEach(pago => {
-        const key = getMonthKey(pago.fecha);
+      (v.abonos || []).forEach(abono => {
+        const key = getMonthKey(abono.fecha);
         if (key) {
-          pagosByMonth[key] = (pagosByMonth[key] || 0) + pago.monto;
+          cobrosByMonth[key] = (cobrosByMonth[key] || 0) + abono.monto;
         }
       });
     });
 
-    // Compras de contado
+    // Calcular egresos por mes (TODOS los pagos de compras incluyendo abonos + gastos)
+    const pagosByMonth = {};
+    
+    // Pagos desde abonos de compras (incluye pagos iniciales y abonos posteriores)
     compras.forEach(c => {
-      if (c.pagado >= c.total) {
-        const key = getMonthKey(c.fecha);
-        if (key && !cxp.find(cp => cp.compraId === c.id)) {
-          pagosByMonth[key] = (pagosByMonth[key] || 0) + c.total;
+      (c.abonos || []).forEach(abono => {
+        const key = getMonthKey(abono.fecha);
+        if (key) {
+          pagosByMonth[key] = (pagosByMonth[key] || 0) + abono.monto;
         }
-      }
+      });
     });
 
     // Gastos por mes
@@ -5351,8 +5643,44 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     const cxcPendiente = cxc.reduce((sum, c) => sum + ((c.monto || 0) - (c.cobrado || 0)), 0);
     const cxpPendiente = cxp.reduce((sum, c) => sum + ((c.monto || 0) - (c.pagado || 0)), 0);
 
+    const imprimirReporte = () => {
+      let tablaHTML = `
+        <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="stat-card"><div class="stat-value text-emerald">${formatCurrency(totalIngresos)}</div><div class="stat-label">Total Ingresos</div></div>
+          <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalEgresos)}</div><div class="stat-label">Total Egresos</div></div>
+          <div class="stat-card"><div class="stat-value ${flujoNetoTotal >= 0 ? 'text-emerald' : 'text-red'}">${formatCurrency(flujoNetoTotal)}</div><div class="stat-label">Flujo Neto</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(chartData[chartData.length - 1]?.acumulado || 0)}</div><div class="stat-label">Saldo Actual</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Flujo de Caja Mensual</div>
+          <table>
+            <thead><tr><th>Mes</th><th class="text-right">Ingresos</th><th class="text-right">Egresos</th><th class="text-right">Flujo Neto</th><th class="text-right">Acumulado</th></tr></thead>
+            <tbody>
+      `;
+      chartData.forEach(d => {
+        tablaHTML += `<tr><td>${d.mes}</td><td class="text-right text-emerald">${formatCurrency(d.ingresos)}</td><td class="text-right text-red">${formatCurrency(d.egresos)}</td><td class="text-right ${d.flujoNeto >= 0 ? 'text-emerald' : 'text-red'}">${formatCurrency(d.flujoNeto)}</td><td class="text-right font-bold">${formatCurrency(d.acumulado)}</td></tr>`;
+      });
+      tablaHTML += `</tbody><tfoot><tr class="total-row"><td>TOTAL</td><td class="text-right">${formatCurrency(totalIngresos)}</td><td class="text-right">${formatCurrency(totalEgresos)}</td><td class="text-right">${formatCurrency(flujoNetoTotal)}</td><td></td></tr></tfoot></table></div>`;
+      
+      tablaHTML += `<div class="section"><div class="section-title">Flujo Futuro Esperado</div>
+        <table><tbody>
+          <tr><td>Cuentas por Cobrar (CxC)</td><td class="text-right text-emerald">${formatCurrency(cxcPendiente)}</td></tr>
+          <tr><td>Cuentas por Pagar (CxP)</td><td class="text-right text-red">-${formatCurrency(cxpPendiente)}</td></tr>
+          <tr class="total-row"><td>Flujo Neto Esperado</td><td class="text-right ${(cxcPendiente - cxpPendiente) >= 0 ? 'text-emerald' : 'text-red'}">${formatCurrency(cxcPendiente - cxpPendiente)}</td></tr>
+        </tbody></table></div>`;
+      
+      generarReporteImprimible('Reporte de Flujo de Caja', tablaHTML);
+    };
+
     return (
       <div className="space-y-4">
+        {/* Botón Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="secondary" onClick={imprimirReporte}>
+            <Icons.Document /> Imprimir Reporte
+          </Button>
+        </div>
+
         {/* Resumen */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
