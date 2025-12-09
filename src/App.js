@@ -1688,6 +1688,9 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
                               <button onClick={() => handleEdit(item)} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-white rounded transition-colors" title="Editar">
                                 <Icons.Edit />
                               </button>
+                              <button onClick={() => handleDelete(item.id)} className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Eliminar">
+                                <Icons.Trash />
+                              </button>
                             </div>
                           </div>
                         );

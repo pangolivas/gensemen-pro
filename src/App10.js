@@ -1404,21 +1404,71 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
   };
 
   const handleSaveInventory = () => {
+    const toroId = Number(form.toroId);
+    const termo = Number(form.termo);
+    const canastilla = Number(form.canastilla);
+    const cantidad = Number(form.cantidad);
+    const costoUnitario = Number(form.costoUnitario);
+
     if (editingItem) {
-      setInventory(inventory.map(item => 
-        item.id === editingItem.id 
-          ? { ...item, toroId: Number(form.toroId), termo: Number(form.termo), canastilla: Number(form.canastilla), cantidad: Number(form.cantidad), costoUnitario: Number(form.costoUnitario) }
-          : item
-      ));
+      // Al editar, verificar si la nueva ubicación ya tiene un registro existente (diferente al que estamos editando)
+      const existingItem = inventory.find(item => 
+        item.id !== editingItem.id &&
+        item.toroId === toroId && 
+        item.termo === termo && 
+        item.canastilla === canastilla
+      );
+
+      if (existingItem) {
+        // Consolidar: sumar al existente y eliminar el que estamos editando
+        const cantidadTotal = existingItem.cantidad + cantidad;
+        const costoPromedio = ((existingItem.cantidad * existingItem.costoUnitario) + (cantidad * costoUnitario)) / cantidadTotal;
+        
+        setInventory(inventory
+          .filter(item => item.id !== editingItem.id) // Eliminar el que editamos
+          .map(item => item.id === existingItem.id 
+            ? { ...item, cantidad: cantidadTotal, costoUnitario: Math.round(costoPromedio * 100) / 100 }
+            : item
+          )
+        );
+      } else {
+        // Actualizar normalmente
+        setInventory(inventory.map(item => 
+          item.id === editingItem.id 
+            ? { ...item, toroId, termo, canastilla, cantidad, costoUnitario }
+            : item
+        ));
+      }
     } else {
-      setInventory([...inventory, {
-        id: Date.now(),
-        toroId: Number(form.toroId),
-        termo: Number(form.termo),
-        canastilla: Number(form.canastilla),
-        cantidad: Number(form.cantidad),
-        costoUnitario: Number(form.costoUnitario),
-      }]);
+      // Buscar si ya existe un registro con mismo toro, termo y canastilla
+      const existingItem = inventory.find(item => 
+        item.toroId === toroId && 
+        item.termo === termo && 
+        item.canastilla === canastilla
+      );
+
+      if (existingItem) {
+        // Consolidar: sumar cantidad al registro existente
+        const cantidadTotal = existingItem.cantidad + cantidad;
+        // Calcular costo promedio ponderado
+        const costoPromedio = ((existingItem.cantidad * existingItem.costoUnitario) + (cantidad * costoUnitario)) / cantidadTotal;
+        
+        setInventory(inventory.map(item => 
+          item.id === existingItem.id 
+            ? { ...item, cantidad: cantidadTotal, costoUnitario: Math.round(costoPromedio * 100) / 100 }
+            : item
+        ));
+      } else {
+        // Crear nuevo registro
+        setInventory([...inventory, {
+          id: Date.now(),
+          toroId,
+          termo,
+          canastilla,
+          cantidad,
+          costoUnitario,
+        }]);
+      }
     }
     setShowModal(false);
     setForm({ toroId: '', termo: '', canastilla: '', cantidad: '', costoUnitario: '' });
@@ -1461,6 +1511,43 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
     }
   };
 
+  // Detectar duplicados (mismo toro, termo y canastilla)
+  const detectarDuplicados = () => {
+    const grupos = {};
+    inventory.forEach(item => {
+      const key = `${item.toroId}-${item.termo}-${item.canastilla}`;
+      if (!grupos[key]) grupos[key] = [];
+      grupos[key].push(item);
+    });
+    return Object.values(grupos).filter(grupo => grupo.length > 1);
+  };
+
+  const duplicados = detectarDuplicados();
+  const hayDuplicados = duplicados.length > 0;
+
+  // Consolidar todos los duplicados
+  const handleConsolidarDuplicados = () => {
+    if (!window.confirm(`Se encontraron ${duplicados.length} grupos de registros duplicados.\n\n¿Deseas consolidarlos? Los registros con mismo toro, termo y canastilla se unificarán sumando sus cantidades.`)) {
+      return;
+    }
+
+    const grupos = {};
+    inventory.forEach(item => {
+      const key = `${item.toroId}-${item.termo}-${item.canastilla}`;
+      if (!grupos[key]) {
+        grupos[key] = { ...item };
+      } else {
+        // Calcular cantidad total y costo promedio ponderado
+        const cantidadTotal = grupos[key].cantidad + item.cantidad;
+        const costoPromedio = ((grupos[key].cantidad * grupos[key].costoUnitario) + (item.cantidad * item.costoUnitario)) / cantidadTotal;
+        grupos[key].cantidad = cantidadTotal;
+        grupos[key].costoUnitario = Math.round(costoPromedio * 100) / 100;
+      }
+    });
+
+    setInventory(Object.values(grupos));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -1468,9 +1555,16 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
           <h1 className="text-2xl font-bold text-gray-900">Inventario</h1>
           <p className="text-gray-500 text-sm">Gestión de pajillas por termo y canastilla</p>
         </div>
-        <Button onClick={() => { setEditingItem(null); setForm({ toroId: '', termo: '', canastilla: '', cantidad: '', costoUnitario: '' }); setToroSearch(''); setShowModal(true); }}>
-          <Icons.Plus /> Agregar Inventario
-        </Button>
+        <div className="flex gap-2">
+          {hayDuplicados && (
+            <Button variant="secondary" onClick={handleConsolidarDuplicados}>
+              <Icons.Move /> Consolidar {duplicados.length} duplicados
+            </Button>
+          )}
+          <Button onClick={() => { setEditingItem(null); setForm({ toroId: '', termo: '', canastilla: '', cantidad: '', costoUnitario: '' }); setToroSearch(''); setShowModal(true); }}>
+            <Icons.Plus /> Agregar Inventario
+          </Button>
+        </div>
       </div>
 
       {/* Stats - 3 en una fila */}
@@ -4516,7 +4610,13 @@ const GastosModule = ({ gastos, setGastos, categorias }) => {
 const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, clientes, proveedores, categorias }) => {
   const [selectedReport, setSelectedReport] = useState('inventario');
   const [selectedPeriod, setSelectedPeriod] = useState('all');
-  const [subFilter, setSubFilter] = useState('all'); // Para filtros secundarios
+  const [entityFilter, setEntityFilter] = useState('all'); // Filtro por entidad (cliente, proveedor, toro, categoría)
+
+  // Reset filtro de entidad cuando cambia el reporte
+  const handleReportChange = (reportId) => {
+    setSelectedReport(reportId);
+    setEntityFilter('all');
+  };
 
   // Datos filtrados por período
   const ventasFiltradas = filterByPeriod(ventas, selectedPeriod);
@@ -4608,8 +4708,13 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
 
   // ========== REPORTE DE INVENTARIO ==========
   const renderInventarioReport = () => {
+    // Filtrar inventario por toro si hay filtro seleccionado
+    const inventarioFiltrado = entityFilter === 'all' 
+      ? inventory 
+      : inventory.filter(i => i.toroId === Number(entityFilter));
+
     // Agrupar por toro
-    const inventarioByToro = inventory.reduce((acc, item) => {
+    const inventarioByToro = inventarioFiltrado.reduce((acc, item) => {
       if (!acc[item.toroId]) {
         acc[item.toroId] = { cantidad: 0, valor: 0, ubicaciones: [] };
       }
@@ -4624,8 +4729,10 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return { ...toro, toroId: Number(toroId), ...data };
     }).sort((a, b) => b.cantidad - a.cantidad);
 
-    const totalPajillas = inventory.reduce((sum, i) => sum + i.cantidad, 0);
-    const valorTotal = inventory.reduce((sum, i) => sum + (i.cantidad * (i.costoUnitario || 0)), 0);
+    const totalPajillas = inventarioFiltrado.reduce((sum, i) => sum + i.cantidad, 0);
+    const valorTotal = inventarioFiltrado.reduce((sum, i) => sum + (i.cantidad * (i.costoUnitario || 0)), 0);
+    
+    const toroSeleccionado = entityFilter !== 'all' ? getToro(Number(entityFilter)) : null;
 
     const imprimirReporte = () => {
       let tablaHTML = `
@@ -4643,7 +4750,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         tablaHTML += '<tr><td>' + item.codigo + '</td><td>' + item.nombre + '</td><td>' + ubicaciones + '</td><td class="text-right font-bold">' + item.cantidad + '</td><td class="text-right">' + formatCurrency(item.valor) + '</td></tr>';
       });
       tablaHTML += '</tbody><tfoot><tr class="total-row"><td colspan="3">TOTAL</td><td class="text-right">' + totalPajillas + '</td><td class="text-right">' + formatCurrency(valorTotal) + '</td></tr></tfoot></table>';
-      generarReporteImprimible('Reporte de Inventario', tablaHTML);
+      generarReporteImprimible('Reporte de Inventario', tablaHTML, toroSeleccionado ? 'Toro: ' + toroSeleccionado.codigo + ' - ' + toroSeleccionado.nombre : '');
     };
 
     return (
@@ -4717,12 +4824,17 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
 
   // ========== REPORTE DE VENTAS ==========
   const renderVentasReport = () => {
-    const totalVentas = ventasFiltradas.reduce((sum, v) => sum + v.total, 0);
-    const totalCobrado = ventasFiltradas.reduce((sum, v) => sum + (v.cobrado || 0), 0);
+    // Filtrar ventas por cliente si hay filtro seleccionado
+    const ventasConFiltro = entityFilter === 'all' 
+      ? ventasFiltradas 
+      : ventasFiltradas.filter(v => v.clienteId === Number(entityFilter));
+
+    const totalVentas = ventasConFiltro.reduce((sum, v) => sum + v.total, 0);
+    const totalCobrado = ventasConFiltro.reduce((sum, v) => sum + (v.cobrado || 0), 0);
     const totalPendiente = totalVentas - totalCobrado;
 
     // Agrupar por cliente
-    const ventasByCliente = ventasFiltradas.reduce((acc, v) => {
+    const ventasByCliente = ventasConFiltro.reduce((acc, v) => {
       if (!acc[v.clienteId]) acc[v.clienteId] = { total: 0, count: 0 };
       acc[v.clienteId].total += v.total;
       acc[v.clienteId].count += 1;
@@ -4730,7 +4842,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     }, {});
 
     // Agrupar por toro (desde items)
-    const ventasByToro = ventasFiltradas.reduce((acc, v) => {
+    const ventasByToro = ventasConFiltro.reduce((acc, v) => {
       (v.items || []).forEach(item => {
         if (!acc[item.toroId]) acc[item.toroId] = { cantidad: 0, total: 0 };
         acc[item.toroId].cantidad += item.cantidad;
@@ -4739,24 +4851,30 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return acc;
     }, {});
 
+    const clienteSeleccionado = entityFilter !== 'all' ? getCliente(Number(entityFilter)) : null;
+    const subtituloReporte = [
+      selectedPeriod !== 'all' ? 'Período: ' + selectedPeriod : '',
+      clienteSeleccionado ? 'Cliente: ' + clienteSeleccionado.nombre : ''
+    ].filter(Boolean).join(' | ');
+
     const imprimirReporte = () => {
       let tablaHTML = `
         <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
           <div class="stat-card"><div class="stat-value text-emerald">${formatCurrency(totalVentas)}</div><div class="stat-label">Total Ventas</div></div>
           <div class="stat-card"><div class="stat-value">${formatCurrency(totalCobrado)}</div><div class="stat-label">Cobrado</div></div>
           <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalPendiente)}</div><div class="stat-label">Pendiente</div></div>
-          <div class="stat-card"><div class="stat-value">${ventasFiltradas.length}</div><div class="stat-label">Transacciones</div></div>
+          <div class="stat-card"><div class="stat-value">${ventasConFiltro.length}</div><div class="stat-label">Transacciones</div></div>
         </div>
         <div class="section"><div class="section-title">Detalle de Ventas</div>
         <table><thead><tr><th>Fecha</th><th>Cliente</th><th class="text-center">Items</th><th class="text-right">Total</th><th class="text-right">Cobrado</th><th>Estado</th></tr></thead><tbody>
       `;
-      ventasFiltradas.forEach(v => {
+      ventasConFiltro.forEach(v => {
         const cliente = getCliente(v.clienteId);
         const estado = v.cobrado >= v.total ? 'Pagado' : 'Pendiente';
         tablaHTML += '<tr><td>' + formatDate(v.fecha) + '</td><td>' + cliente.nombre + '</td><td class="text-center">' + (v.items?.length || 0) + '</td><td class="text-right">' + formatCurrency(v.total) + '</td><td class="text-right">' + formatCurrency(v.cobrado || 0) + '</td><td>' + estado + '</td></tr>';
       });
       tablaHTML += '</tbody></table></div>';
-      generarReporteImprimible('Reporte de Ventas', tablaHTML, selectedPeriod !== 'all' ? 'Período: ' + selectedPeriod : '');
+      generarReporteImprimible('Reporte de Ventas', tablaHTML, subtituloReporte);
     };
 
     return (
@@ -4784,7 +4902,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           </div>
           <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
             <p className="text-sm text-purple-600">Transacciones</p>
-            <p className="text-2xl font-bold text-purple-700">{ventasFiltradas.length}</p>
+            <p className="text-2xl font-bold text-purple-700">{ventasConFiltro.length}</p>
           </div>
         </div>
 
@@ -4887,14 +5005,19 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
 
   // ========== REPORTE DE COMPRAS ==========
   const renderComprasReport = () => {
-    const totalCompras = comprasFiltradas.reduce((sum, c) => sum + c.total, 0);
-    const totalPagado = comprasFiltradas.reduce((sum, c) => sum + (c.pagado || 0), 0);
+    // Filtrar compras por proveedor si hay filtro seleccionado
+    const comprasConFiltro = entityFilter === 'all' 
+      ? comprasFiltradas 
+      : comprasFiltradas.filter(c => c.proveedorId === Number(entityFilter));
+
+    const totalCompras = comprasConFiltro.reduce((sum, c) => sum + c.total, 0);
+    const totalPagado = comprasConFiltro.reduce((sum, c) => sum + (c.pagado || 0), 0);
     const totalPendiente = totalCompras - totalPagado;
-    const totalPajillasCompradas = comprasFiltradas.reduce((sum, c) => 
+    const totalPajillasCompradas = comprasConFiltro.reduce((sum, c) => 
       sum + (c.items || []).reduce((s, i) => s + i.cantidad, 0), 0);
 
     // Agrupar por proveedor
-    const comprasByProveedor = comprasFiltradas.reduce((acc, c) => {
+    const comprasByProveedor = comprasConFiltro.reduce((acc, c) => {
       if (!acc[c.proveedorId]) acc[c.proveedorId] = { total: 0, count: 0 };
       acc[c.proveedorId].total += c.total;
       acc[c.proveedorId].count += 1;
@@ -4902,7 +5025,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
     }, {});
 
     // Agrupar por toro
-    const comprasByToro = comprasFiltradas.reduce((acc, c) => {
+    const comprasByToro = comprasConFiltro.reduce((acc, c) => {
       (c.items || []).forEach(item => {
         if (!acc[item.toroId]) acc[item.toroId] = { cantidad: 0, total: 0 };
         acc[item.toroId].cantidad += item.cantidad;
@@ -4910,6 +5033,12 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       });
       return acc;
     }, {});
+
+    const proveedorSeleccionado = entityFilter !== 'all' ? getProveedor(Number(entityFilter)) : null;
+    const subtituloReporte = [
+      selectedPeriod !== 'all' ? 'Período: ' + selectedPeriod : '',
+      proveedorSeleccionado ? 'Proveedor: ' + proveedorSeleccionado.nombre : ''
+    ].filter(Boolean).join(' | ');
 
     const imprimirReporte = () => {
       let tablaHTML = `
@@ -4927,7 +5056,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         tablaHTML += '<tr><td>' + prov.nombre + '</td><td class="text-center">' + data.count + '</td><td class="text-right">' + formatCurrency(data.total) + '</td></tr>';
       });
       tablaHTML += '</tbody></table></div>';
-      generarReporteImprimible('Reporte de Compras', tablaHTML, selectedPeriod !== 'all' ? 'Período: ' + selectedPeriod : '');
+      generarReporteImprimible('Reporte de Compras', tablaHTML, subtituloReporte);
     };
 
     return (
@@ -5058,10 +5187,15 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
 
   // ========== REPORTE DE GASTOS ==========
   const renderGastosReport = () => {
-    const totalGastos = gastosFiltrados.reduce((sum, g) => sum + g.monto, 0);
+    // Filtrar gastos por categoría si hay filtro seleccionado
+    const gastosConFiltro = entityFilter === 'all' 
+      ? gastosFiltrados 
+      : gastosFiltrados.filter(g => g.categoriaId === Number(entityFilter));
+
+    const totalGastos = gastosConFiltro.reduce((sum, g) => sum + g.monto, 0);
 
     // Agrupar por categoría
-    const gastosByCategoria = gastosFiltrados.reduce((acc, g) => {
+    const gastosByCategoria = gastosConFiltro.reduce((acc, g) => {
       const catId = g.categoriaId || 0;
       if (!acc[catId]) acc[catId] = { total: 0, count: 0 };
       acc[catId].total += g.monto;
@@ -5069,12 +5203,18 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return acc;
     }, {});
 
+    const categoriaSeleccionada = entityFilter !== 'all' ? getCategoria(Number(entityFilter)) : null;
+    const subtituloReporte = [
+      selectedPeriod !== 'all' ? 'Período: ' + selectedPeriod : '',
+      categoriaSeleccionada ? 'Categoría: ' + categoriaSeleccionada.nombre : ''
+    ].filter(Boolean).join(' | ');
+
     const imprimirReporte = () => {
       let tablaHTML = `
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalGastos)}</div><div class="stat-label">Total Gastos</div></div>
-          <div class="stat-card"><div class="stat-value">${gastosFiltrados.length}</div><div class="stat-label">Registros</div></div>
-          <div class="stat-card"><div class="stat-value">${formatCurrency(gastosFiltrados.length > 0 ? totalGastos / gastosFiltrados.length : 0)}</div><div class="stat-label">Promedio</div></div>
+          <div class="stat-card"><div class="stat-value">${gastosConFiltro.length}</div><div class="stat-label">Registros</div></div>
+          <div class="stat-card"><div class="stat-value">${formatCurrency(gastosConFiltro.length > 0 ? totalGastos / gastosConFiltro.length : 0)}</div><div class="stat-label">Promedio</div></div>
         </div>
         <div class="section"><div class="section-title">Gastos por Categoría</div>
         <table><thead><tr><th>Categoría</th><th class="text-right">Registros</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>
@@ -5085,7 +5225,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         tablaHTML += '<tr><td>' + cat.nombre + '</td><td class="text-right">' + data.count + '</td><td class="text-right">' + formatCurrency(data.total) + '</td><td class="text-right">' + porcentaje + '%</td></tr>';
       });
       tablaHTML += '</tbody></table></div>';
-      generarReporteImprimible('Reporte de Gastos', tablaHTML, selectedPeriod !== 'all' ? 'Período: ' + selectedPeriod : '');
+      generarReporteImprimible('Reporte de Gastos', tablaHTML, subtituloReporte);
     };
 
     return (
@@ -5105,7 +5245,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           </div>
           <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
             <p className="text-sm text-purple-600">Registros</p>
-            <p className="text-2xl font-bold text-purple-700">{gastosFiltrados.length}</p>
+            <p className="text-2xl font-bold text-purple-700">{gastosConFiltro.length}</p>
           </div>
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <p className="text-sm text-blue-600">Promedio</p>
@@ -5325,10 +5465,29 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
 
   // ========== REPORTE DE CxC / CxP ==========
   const renderCuentasReport = () => {
-    const totalCxC = cxc.reduce((sum, c) => sum + ((c.monto || 0) - (c.cobrado || 0)), 0);
-    const totalCxP = cxp.reduce((sum, c) => sum + ((c.monto || 0) - (c.pagado || 0)), 0);
-    const cxcPendientes = cxc.filter(c => (c.monto - (c.cobrado || 0)) > 0);
-    const cxpPendientes = cxp.filter(c => (c.monto - (c.pagado || 0)) > 0);
+    // Determinar si hay filtro de cliente o proveedor
+    const isClienteFilter = entityFilter.startsWith('cli-');
+    const isProveedorFilter = entityFilter.startsWith('prov-');
+    const filteredClienteId = isClienteFilter ? Number(entityFilter.replace('cli-', '')) : null;
+    const filteredProveedorId = isProveedorFilter ? Number(entityFilter.replace('prov-', '')) : null;
+
+    // Filtrar CxC y CxP según el filtro seleccionado
+    const cxcFiltradas = entityFilter === 'all' 
+      ? cxc 
+      : isClienteFilter 
+        ? cxc.filter(c => c.clienteId === filteredClienteId)
+        : []; // Si es filtro de proveedor, no mostrar CxC
+    
+    const cxpFiltradas = entityFilter === 'all' 
+      ? cxp 
+      : isProveedorFilter 
+        ? cxp.filter(c => c.proveedorId === filteredProveedorId)
+        : []; // Si es filtro de cliente, no mostrar CxP
+
+    const totalCxC = cxcFiltradas.reduce((sum, c) => sum + ((c.monto || 0) - (c.cobrado || 0)), 0);
+    const totalCxP = cxpFiltradas.reduce((sum, c) => sum + ((c.monto || 0) - (c.pagado || 0)), 0);
+    const cxcPendientes = cxcFiltradas.filter(c => (c.monto - (c.cobrado || 0)) > 0);
+    const cxpPendientes = cxpFiltradas.filter(c => (c.monto - (c.pagado || 0)) > 0);
 
     // Calcular antigüedad
     const calcularAntiguedad = (fecha) => {
@@ -5338,6 +5497,15 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
       return dias;
     };
 
+    const entidadSeleccionada = isClienteFilter 
+      ? getCliente(filteredClienteId)
+      : isProveedorFilter 
+        ? getProveedor(filteredProveedorId) 
+        : null;
+    const subtituloReporte = entidadSeleccionada 
+      ? (isClienteFilter ? 'Cliente: ' : 'Proveedor: ') + entidadSeleccionada.nombre 
+      : '';
+
     const imprimirReporte = () => {
       let tablaHTML = `
         <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
@@ -5346,27 +5514,31 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
           <div class="stat-card"><div class="stat-value text-red">${formatCurrency(totalCxP)}</div><div class="stat-label">Total CxP</div></div>
           <div class="stat-card"><div class="stat-value">${cxpPendientes.length}</div><div class="stat-label">Cuentas CxP</div></div>
         </div>
-        <div class="section"><div class="section-title">Cuentas por Cobrar (CxC)</div>
-        <table><thead><tr><th>Cliente</th><th>Fecha</th><th class="text-center">Días</th><th class="text-right">Saldo</th></tr></thead><tbody>
       `;
-      cxcPendientes.sort((a, b) => a.fecha.localeCompare(b.fecha)).forEach(c => {
-        const cliente = getCliente(c.clienteId);
-        const dias = calcularAntiguedad(c.fecha);
-        const saldo = c.monto - (c.cobrado || 0);
-        tablaHTML += '<tr><td>' + cliente.nombre + '</td><td>' + formatDate(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
-      });
-      tablaHTML += '</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxC</td><td class="text-right">' + formatCurrency(totalCxC) + '</td></tr></tfoot></table></div>';
       
-      tablaHTML += '<div class="section"><div class="section-title">Cuentas por Pagar (CxP)</div><table><thead><tr><th>Proveedor</th><th>Fecha</th><th class="text-center">Días</th><th class="text-right">Saldo</th></tr></thead><tbody>';
-      cxpPendientes.sort((a, b) => a.fecha.localeCompare(b.fecha)).forEach(c => {
-        const prov = getProveedor(c.proveedorId);
-        const dias = calcularAntiguedad(c.fecha);
-        const saldo = c.monto - (c.pagado || 0);
-        tablaHTML += '<tr><td>' + prov.nombre + '</td><td>' + formatDate(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
-      });
-      tablaHTML += '</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxP</td><td class="text-right">' + formatCurrency(totalCxP) + '</td></tr></tfoot></table></div>';
+      if (cxcPendientes.length > 0 || entityFilter === 'all' || isClienteFilter) {
+        tablaHTML += '<div class="section"><div class="section-title">Cuentas por Cobrar (CxC)</div><table><thead><tr><th>Cliente</th><th>Fecha</th><th class="text-center">Días</th><th class="text-right">Saldo</th></tr></thead><tbody>';
+        cxcPendientes.sort((a, b) => a.fecha.localeCompare(b.fecha)).forEach(c => {
+          const cliente = getCliente(c.clienteId);
+          const dias = calcularAntiguedad(c.fecha);
+          const saldo = c.monto - (c.cobrado || 0);
+          tablaHTML += '<tr><td>' + cliente.nombre + '</td><td>' + formatDate(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
+        });
+        tablaHTML += '</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxC</td><td class="text-right">' + formatCurrency(totalCxC) + '</td></tr></tfoot></table></div>';
+      }
       
-      generarReporteImprimible('Reporte de Cuentas por Cobrar / Pagar', tablaHTML);
+      if (cxpPendientes.length > 0 || entityFilter === 'all' || isProveedorFilter) {
+        tablaHTML += '<div class="section"><div class="section-title">Cuentas por Pagar (CxP)</div><table><thead><tr><th>Proveedor</th><th>Fecha</th><th class="text-center">Días</th><th class="text-right">Saldo</th></tr></thead><tbody>';
+        cxpPendientes.sort((a, b) => a.fecha.localeCompare(b.fecha)).forEach(c => {
+          const prov = getProveedor(c.proveedorId);
+          const dias = calcularAntiguedad(c.fecha);
+          const saldo = c.monto - (c.pagado || 0);
+          tablaHTML += '<tr><td>' + prov.nombre + '</td><td>' + formatDate(c.fecha) + '</td><td class="text-center">' + dias + '</td><td class="text-right">' + formatCurrency(saldo) + '</td></tr>';
+        });
+        tablaHTML += '</tbody><tfoot><tr class="total-row"><td colspan="3">Total CxP</td><td class="text-right">' + formatCurrency(totalCxP) + '</td></tr></tfoot></table></div>';
+      }
+      
+      generarReporteImprimible('Reporte de Cuentas por Cobrar / Pagar', tablaHTML, subtituloReporte);
     };
 
     return (
@@ -5841,7 +6013,76 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
             <p className="text-gray-500 text-sm">Análisis y reportes del sistema</p>
           </div>
         </div>
-        <div className="print:hidden">
+        <div className="print:hidden flex items-center gap-3">
+          {/* Filtro por Entidad */}
+          {selectedReport === 'inventario' && (
+            <select
+              value={entityFilter}
+              onChange={(e) => setEntityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="all">Todos los Toros</option>
+              {toros.filter(t => t.activo).map(t => (
+                <option key={t.id} value={t.id}>{t.codigo} - {t.nombre}</option>
+              ))}
+            </select>
+          )}
+          {selectedReport === 'ventas' && (
+            <select
+              value={entityFilter}
+              onChange={(e) => setEntityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="all">Todos los Clientes</option>
+              {clientes.filter(c => c.activo).map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+          )}
+          {selectedReport === 'compras' && (
+            <select
+              value={entityFilter}
+              onChange={(e) => setEntityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="all">Todos los Proveedores</option>
+              {proveedores.filter(p => p.activo).map(p => (
+                <option key={p.id} value={p.id}>{p.nombre}</option>
+              ))}
+            </select>
+          )}
+          {selectedReport === 'gastos' && (
+            <select
+              value={entityFilter}
+              onChange={(e) => setEntityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="all">Todas las Categorías</option>
+              {categorias.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+          )}
+          {selectedReport === 'cuentas' && (
+            <select
+              value={entityFilter}
+              onChange={(e) => setEntityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="all">Todos</option>
+              <optgroup label="Clientes (CxC)">
+                {clientes.filter(c => c.activo).map(c => (
+                  <option key={'cli-' + c.id} value={'cli-' + c.id}>{c.nombre}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Proveedores (CxP)">
+                {proveedores.filter(p => p.activo).map(p => (
+                  <option key={'prov-' + p.id} value={'prov-' + p.id}>{p.nombre}</option>
+                ))}
+              </optgroup>
+            </select>
+          )}
+          {/* Filtro por Período */}
           {selectedReport !== 'inventario' && selectedReport !== 'cuentas' && selectedReport !== 'flujoCaja' && (
             <PeriodFilter selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
           )}
@@ -5853,7 +6094,7 @@ const ReportesModule = ({ inventory, toros, compras, ventas, cxc, cxp, gastos, c
         {reportTypes.map((report) => (
           <button
             key={report.id}
-            onClick={() => setSelectedReport(report.id)}
+            onClick={() => handleReportChange(report.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               selectedReport === report.id
                 ? 'bg-emerald-600 text-white'
