@@ -1625,9 +1625,6 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
               return { numero: i + 1, items: canastillaItems, total };
             });
 
-            // Contar canastillas únicas con stock (no registros/toros)
-            const canastillasConStock = canastillas.filter(c => c.total > 0).length;
-
             return (
               <div key={termo} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 <button
@@ -1640,7 +1637,7 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
                     </div>
                     <div className="text-left">
                       <h3 className="font-semibold text-gray-900 text-sm">Termo {termo}</h3>
-                      <p className="text-xs text-gray-500">{canastillasConStock}/6 canastillas · {termoTotal} pajillas</p>
+                      <p className="text-xs text-gray-500">{items.length}/6 canastillas · {termoTotal} pajillas</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
