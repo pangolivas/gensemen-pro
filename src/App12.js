@@ -1668,9 +1668,9 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
                       ))}
                     </div>
                     
-                    {/* Lista de items - ordenados por canastilla */}
+                    {/* Lista de items */}
                     <div className="space-y-1.5">
-                      {[...items].sort((a, b) => a.canastilla - b.canastilla).map((item) => {
+                      {items.map((item) => {
                         const toro = getToro(item.toroId);
                         return (
                           <div key={item.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
