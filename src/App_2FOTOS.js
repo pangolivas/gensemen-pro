@@ -8138,7 +8138,6 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
     setProveedorForm({ nombre: '', contacto: '', telefono: '', email: '' });
     setClienteForm({ nombre: '', contacto: '', telefono: '', email: '' });
     setCategoriaForm({ nombre: '', icono: 'more' });
-    setUploadingPhoto(false);
   };
 
   const handleOpenModal = (item = null) => {
@@ -8211,7 +8210,6 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
     setShowModal(false);
     resetForms();
     setEditingItem(null);
-    setUploadingPhoto(false);
   };
 
   const handleToggleActive = (id) => {
@@ -8737,10 +8735,10 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
       </div>
 
       {/* Modal */}
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setUploadingPhoto(false); }} title={getModalTitle()} size={activeTab === 'toros' ? 'lg' : 'md'}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={getModalTitle()} size={activeTab === 'toros' ? 'lg' : 'md'}>
         {renderModalContent()}
         <div className="flex gap-3 pt-6">
-          <Button variant="secondary" onClick={() => { setShowModal(false); setUploadingPhoto(false); }} className="flex-1">Cancelar</Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)} className="flex-1">Cancelar</Button>
           <Button onClick={handleSave} className="flex-1" disabled={!isFormValid() || uploadingPhoto}>
             {editingItem ? 'Actualizar' : 'Guardar'}
           </Button>
