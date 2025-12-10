@@ -1625,6 +1625,9 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
               return { numero: i + 1, items: canastillaItems, total };
             });
 
+            // Contar canastillas únicas con stock (no registros/toros)
+            const canastillasConStock = canastillas.filter(c => c.total > 0).length;
+
             return (
               <div key={termo} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 <button
@@ -1637,7 +1640,7 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
                     </div>
                     <div className="text-left">
                       <h3 className="font-semibold text-gray-900 text-sm">Termo {termo}</h3>
-                      <p className="text-xs text-gray-500">{items.length}/6 canastillas · {termoTotal} pajillas</p>
+                      <p className="text-xs text-gray-500">{canastillasConStock}/6 canastillas · {termoTotal} pajillas</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1665,9 +1668,9 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
                       ))}
                     </div>
                     
-                    {/* Lista de items */}
+                    {/* Lista de items - ordenados por canastilla */}
                     <div className="space-y-1.5">
-                      {items.map((item) => {
+                      {[...items].sort((a, b) => a.canastilla - b.canastilla).map((item) => {
                         const toro = getToro(item.toroId);
                         return (
                           <div key={item.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">

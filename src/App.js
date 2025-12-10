@@ -9,6 +9,7 @@ import React, { useState, useEffect, createContext, useContext, useCallback } fr
 // Descomenta estas líneas cuando tengas Firebase configurado:
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCeFJuiRN4cJvRQQM3vw7JLNTIKpUq-aV4",
@@ -23,6 +24,7 @@ const firebaseConfig = {
 // Inicialización de Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Variable para habilitar/deshabilitar Firebase
 const FIREBASE_ENABLED = true;
@@ -227,11 +229,11 @@ const getTodayISO = () => {
 
 // ==================== DATOS INICIALES ====================
 const initialCatalogToros = [
-  { id: 1, codigo: '475', nombre: '475-MACHONA', raza: 'Brahman', activo: true },
-  { id: 2, codigo: 'MS1947', nombre: 'ATILA', raza: 'Brahman', activo: true },
-  { id: 3, codigo: 'MH2122', nombre: 'DARK RED MASHONA 157', raza: 'Mashona', activo: true },
-  { id: 4, codigo: 'PRIMO 23', nombre: 'ELPRIMO 23', raza: 'Brahman', activo: true },
-  { id: 5, codigo: '154MH045', nombre: 'MAXIMUS 1812', raza: 'Mashona', activo: true },
+  { id: 1, codigo: '475', nombre: '475-MACHONA', raza: 'Brahman', activo: true, precioVenta: 0, fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false },
+  { id: 2, codigo: 'MS1947', nombre: 'ATILA', raza: 'Brahman', activo: true, precioVenta: 0, fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false },
+  { id: 3, codigo: 'MH2122', nombre: 'DARK RED MASHONA 157', raza: 'Mashona', activo: true, precioVenta: 0, fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false },
+  { id: 4, codigo: 'PRIMO 23', nombre: 'ELPRIMO 23', raza: 'Brahman', activo: true, precioVenta: 0, fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false },
+  { id: 5, codigo: '154MH045', nombre: 'MAXIMUS 1812', raza: 'Mashona', activo: true, precioVenta: 0, fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false },
 ];
 
 const initialCatalogProveedores = [
@@ -465,6 +467,37 @@ const Icons = {
   Document: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
       <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
+  Image: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
+    </svg>
+  ),
+  Upload: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+    </svg>
+  ),
+  Store: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+      <path d="M9 22V12h6v10" />
+    </svg>
+  ),
+  ShoppingCart: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+    </svg>
+  ),
+  Package: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+      <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" />
     </svg>
   ),
 };
@@ -6952,7 +6985,8 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
   const [searchTerm, setSearchTerm] = useState('');
   
   // Forms
-  const [toroForm, setToroForm] = useState({ codigo: '', nombre: '', raza: '' });
+  const [toroForm, setToroForm] = useState({ codigo: '', nombre: '', raza: '', precioVenta: '', fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [proveedorForm, setProveedorForm] = useState({ nombre: '', contacto: '', telefono: '', email: '' });
   const [clienteForm, setClienteForm] = useState({ nombre: '', contacto: '', telefono: '', email: '' });
   const [categoriaForm, setCategoriaForm] = useState({ nombre: '', icono: 'more' });
@@ -6965,7 +6999,7 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
   ];
 
   const resetForms = () => {
-    setToroForm({ codigo: '', nombre: '', raza: '' });
+    setToroForm({ codigo: '', nombre: '', raza: '', precioVenta: '', fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false });
     setProveedorForm({ nombre: '', contacto: '', telefono: '', email: '' });
     setClienteForm({ nombre: '', contacto: '', telefono: '', email: '' });
     setCategoriaForm({ nombre: '', icono: 'more' });
@@ -6976,7 +7010,16 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
     if (item) {
       switch (activeTab) {
         case 'toros':
-          setToroForm({ codigo: item.codigo, nombre: item.nombre, raza: item.raza || '' });
+          setToroForm({ 
+            codigo: item.codigo, 
+            nombre: item.nombre, 
+            raza: item.raza || '',
+            precioVenta: item.precioVenta || '',
+            fotoUrl: item.fotoUrl || '',
+            videoUrl: item.videoUrl || '',
+            descripcion: item.descripcion || '',
+            disponibleTienda: item.disponibleTienda || false
+          });
           break;
         case 'proveedores':
           setProveedorForm({ nombre: item.nombre, contacto: item.contacto || '', telefono: item.telefono || '', email: item.email || '' });
@@ -6997,10 +7040,14 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
   const handleSave = () => {
     switch (activeTab) {
       case 'toros':
+        const toroData = {
+          ...toroForm,
+          precioVenta: parseFloat(toroForm.precioVenta) || 0
+        };
         if (editingItem) {
-          setToros(toros.map(t => t.id === editingItem.id ? { ...t, ...toroForm } : t));
+          setToros(toros.map(t => t.id === editingItem.id ? { ...t, ...toroData } : t));
         } else {
-          setToros([...toros, { id: Date.now(), ...toroForm, activo: true }]);
+          setToros([...toros, { id: Date.now(), ...toroData, activo: true }]);
         }
         break;
       case 'proveedores':
@@ -7102,14 +7149,157 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
     }
   };
 
+  // Función para subir foto a Firebase Storage
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona una imagen válida');
+      return;
+    }
+    
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no debe superar 5MB');
+      return;
+    }
+    
+    setUploadingPhoto(true);
+    try {
+      const fileName = `toros/${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, fileName);
+      await uploadBytes(storageRef, file);
+      const downloadUrl = await getDownloadURL(storageRef);
+      setToroForm({...toroForm, fotoUrl: downloadUrl});
+    } catch (error) {
+      console.error('Error subiendo foto:', error);
+      alert('Error al subir la foto. Intenta de nuevo.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const renderModalContent = () => {
     switch (activeTab) {
       case 'toros':
         return (
           <div className="space-y-4">
-            <Input label="Código" value={toroForm.codigo} onChange={(v) => setToroForm({...toroForm, codigo: v})} placeholder="Ej: MS1947" required />
-            <Input label="Nombre" value={toroForm.nombre} onChange={(v) => setToroForm({...toroForm, nombre: v})} placeholder="Ej: ATILA" required />
-            <Input label="Raza" value={toroForm.raza} onChange={(v) => setToroForm({...toroForm, raza: v})} placeholder="Ej: Brahman" />
+            {/* Sección: Datos Básicos */}
+            <div className="pb-3 border-b border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Datos Básicos</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label="Código" value={toroForm.codigo} onChange={(v) => setToroForm({...toroForm, codigo: v})} placeholder="Ej: MS1947" required />
+                <Input label="Raza" value={toroForm.raza} onChange={(v) => setToroForm({...toroForm, raza: v})} placeholder="Ej: Brahman" />
+              </div>
+              <div className="mt-4">
+                <Input label="Nombre" value={toroForm.nombre} onChange={(v) => setToroForm({...toroForm, nombre: v})} placeholder="Ej: ATILA" required />
+              </div>
+            </div>
+            
+            {/* Sección: Tienda Online */}
+            <div className="pb-3 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-gray-700">Tienda Online</h4>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={toroForm.disponibleTienda}
+                    onChange={(e) => setToroForm({...toroForm, disponibleTienda: e.target.checked})}
+                    className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                  />
+                  <span className="text-sm text-gray-600">Mostrar en tienda</span>
+                </label>
+              </div>
+              
+              <Input 
+                label="Precio de Venta (MXN)" 
+                type="number"
+                value={toroForm.precioVenta} 
+                onChange={(v) => setToroForm({...toroForm, precioVenta: v})} 
+                placeholder="Ej: 350" 
+                min="0"
+                step="0.01"
+              />
+              
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea
+                  value={toroForm.descripcion}
+                  onChange={(e) => setToroForm({...toroForm, descripcion: e.target.value})}
+                  placeholder="Descripción del toro para mostrar en la tienda..."
+                  rows={3}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none"
+                />
+              </div>
+            </div>
+            
+            {/* Sección: Multimedia */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Multimedia</h4>
+              
+              {/* Foto */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Foto del Toro</label>
+                <div className="flex items-start gap-4">
+                  {toroForm.fotoUrl ? (
+                    <div className="relative">
+                      <img 
+                        src={toroForm.fotoUrl} 
+                        alt="Preview" 
+                        className="w-24 h-24 object-cover rounded-lg border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setToroForm({...toroForm, fotoUrl: ''})}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                      >
+                        <Icons.X />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                      <Icons.Image />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <label className={`inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg cursor-pointer transition-colors ${uploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {uploadingPhoto ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                          <span>Subiendo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Icons.Upload />
+                          <span>Subir foto</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        disabled={uploadingPhoto}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">JPG, PNG. Máximo 5MB</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Video YouTube */}
+              <div>
+                <Input 
+                  label="Video de YouTube (URL)" 
+                  value={toroForm.videoUrl} 
+                  onChange={(v) => setToroForm({...toroForm, videoUrl: v})} 
+                  placeholder="Ej: https://youtube.com/watch?v=..." 
+                />
+                <p className="text-xs text-gray-500 mt-1">Pega el enlace completo del video de YouTube</p>
+              </div>
+            </div>
           </div>
         );
       case 'proveedores':
@@ -7229,9 +7419,12 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Foto</th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Código</th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Nombre</th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Raza</th>
+                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Precio</th>
+                  <th className="text-center px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Tienda</th>
                   <th className="text-center px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Estado</th>
                   <th className="text-center px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Acciones</th>
                 </tr>
@@ -7239,9 +7432,28 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
               <tbody className="divide-y divide-gray-200">
                 {filteredData.map((toro) => (
                   <tr key={toro.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2.5">
+                      {toro.fotoUrl ? (
+                        <img src={toro.fotoUrl} alt={toro.nombre} className="w-10 h-10 object-cover rounded-lg" />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                          <Icons.Image />
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-2.5 text-sm font-mono text-gray-900">{toro.codigo}</td>
                     <td className="px-4 py-2.5 text-sm text-gray-900">{toro.nombre}</td>
                     <td className="px-4 py-2.5 text-sm text-gray-500">{toro.raza || '-'}</td>
+                    <td className="px-4 py-2.5 text-sm text-right font-medium text-gray-900">
+                      {toro.precioVenta > 0 ? formatCurrency(toro.precioVenta) : '-'}
+                    </td>
+                    <td className="px-4 py-2.5 text-center">
+                      {toro.disponibleTienda ? (
+                        <Badge variant="emerald">En tienda</Badge>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2.5 text-center">
                       <Badge variant={toro.activo ? 'success' : 'default'}>{toro.activo ? 'Activo' : 'Inactivo'}</Badge>
                     </td>
@@ -7390,7 +7602,7 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
       </div>
 
       {/* Modal */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={getModalTitle()}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={getModalTitle()} size={activeTab === 'toros' ? 'lg' : 'md'}>
         {renderModalContent()}
         <div className="flex gap-3 pt-6">
           <Button variant="secondary" onClick={() => setShowModal(false)} className="flex-1">Cancelar</Button>
