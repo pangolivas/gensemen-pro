@@ -1360,16 +1360,12 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
 
   const getToro = (toroId) => toros.find(t => t.id === toroId) || { codigo: '', nombre: 'Desconocido' };
 
-  // Inventario activo (excluye items con cantidad 0)
-  const activeInventory = inventory.filter(item => item.cantidad > 0);
-  const totalPajillas = activeInventory.reduce((sum, item) => sum + item.cantidad, 0);
-  const termosEnUso = [...new Set(activeInventory.map(i => i.termo))].length;
-  const torosRegistrados = [...new Set(activeInventory.map(i => i.toroId))].length;
+  const totalPajillas = inventory.reduce((sum, item) => sum + item.cantidad, 0);
+  const termosEnUso = [...new Set(inventory.map(i => i.termo))].length;
+  const torosRegistrados = [...new Set(inventory.map(i => i.toroId))].length;
 
-  // Filtrar inventario por searchTerm (excluyendo items sin stock)
+  // Filtrar inventario por searchTerm
   const filteredInventory = inventory.filter(item => {
-    // Excluir items sin stock
-    if (item.cantidad <= 0) return false;
     if (!searchTerm) return true;
     const toro = getToro(item.toroId);
     const search = searchTerm.toLowerCase();
