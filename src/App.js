@@ -7091,6 +7091,19 @@ const ProductCard = ({ toro, stock, onAddToCart, onViewDetail }) => {
     return match ? match[1] : null;
   };
   
+  // Calcular descuento aplicable
+  const getDescuentoAplicable = (cant) => {
+    if (!toro.descuentos || toro.descuentos.length === 0) return 0;
+    const descuentosOrdenados = [...toro.descuentos]
+      .filter(d => d.cantidadMinima && d.porcentaje)
+      .sort((a, b) => Number(b.cantidadMinima) - Number(a.cantidadMinima));
+    const descuentoAplicable = descuentosOrdenados.find(d => cant >= Number(d.cantidadMinima));
+    return descuentoAplicable ? Number(descuentoAplicable.porcentaje) : 0;
+  };
+  
+  const descuentoActual = getDescuentoAplicable(cantidad);
+  const precioConDescuento = toro.precioVenta * (1 - descuentoActual / 100);
+  
   const videoId = getYouTubeId(toro.videoUrl);
   
   return (
@@ -7138,6 +7151,15 @@ const ProductCard = ({ toro, stock, onAddToCart, onViewDetail }) => {
             </span>
           )}
         </div>
+        
+        {/* Badge de descuento si hay */}
+        {toro.descuentos && toro.descuentos.length > 0 && (
+          <div className="absolute top-3 right-3">
+            <span className="px-2 py-1 bg-orange-500 text-white text-xs font-medium rounded-full">
+              ¡Descuentos!
+            </span>
+          </div>
+        )}
       </div>
       
       {/* Contenido */}
@@ -7152,10 +7174,43 @@ const ProductCard = ({ toro, stock, onAddToCart, onViewDetail }) => {
           <p className="text-sm text-gray-600 mb-4 line-clamp-2">{toro.descripcion}</p>
         )}
         
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-2xl font-bold text-emerald-600">{formatCurrency(toro.precioVenta)}</span>
+        {/* Precio con descuento */}
+        <div className="flex items-center justify-between mb-2">
+          {descuentoActual > 0 ? (
+            <div>
+              <span className="text-sm text-gray-400 line-through mr-2">{formatCurrency(toro.precioVenta)}</span>
+              <span className="text-2xl font-bold text-emerald-600">{formatCurrency(precioConDescuento)}</span>
+              <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">-{descuentoActual}%</span>
+            </div>
+          ) : (
+            <span className="text-2xl font-bold text-emerald-600">{formatCurrency(toro.precioVenta)}</span>
+          )}
           <span className="text-sm text-gray-500">por pajilla</span>
         </div>
+        
+        {/* Mostrar descuentos disponibles */}
+        {toro.descuentos && toro.descuentos.length > 0 && (
+          <div className="mb-3 p-2 bg-orange-50 rounded-lg">
+            <p className="text-xs font-medium text-orange-700 mb-1">Descuentos por volumen:</p>
+            <div className="flex flex-wrap gap-1">
+              {[...toro.descuentos]
+                .filter(d => d.cantidadMinima && d.porcentaje)
+                .sort((a, b) => Number(a.cantidadMinima) - Number(b.cantidadMinima))
+                .map((d, i) => (
+                  <span 
+                    key={i} 
+                    className={`text-xs px-2 py-0.5 rounded ${
+                      cantidad >= Number(d.cantidadMinima) 
+                        ? 'bg-orange-500 text-white' 
+                        : 'bg-orange-100 text-orange-700'
+                    }`}
+                  >
+                    {d.cantidadMinima}+ → {d.porcentaje}%
+                  </span>
+                ))}
+            </div>
+          </div>
+        )}
         
         {stock > 0 ? (
           <div className="space-y-3">
@@ -7298,6 +7353,16 @@ const TiendaCatalogo = ({ toros, inventory, onAddToCart }) => {
 const CarritoPage = ({ carrito, setCarrito, toros, onCheckout, onContinueShopping }) => {
   const getToro = (id) => toros.find(t => t.id === id);
   
+  // Calcular descuento aplicable para un toro
+  const getDescuentoAplicable = (toro, cantidad) => {
+    if (!toro?.descuentos || toro.descuentos.length === 0) return 0;
+    const descuentosOrdenados = [...toro.descuentos]
+      .filter(d => d.cantidadMinima && d.porcentaje)
+      .sort((a, b) => Number(b.cantidadMinima) - Number(a.cantidadMinima));
+    const descuentoAplicable = descuentosOrdenados.find(d => cantidad >= Number(d.cantidadMinima));
+    return descuentoAplicable ? Number(descuentoAplicable.porcentaje) : 0;
+  };
+  
   const updateCantidad = (toroId, nuevaCantidad) => {
     if (nuevaCantidad < 1) {
       setCarrito(carrito.filter(item => item.toroId !== toroId));
@@ -7312,10 +7377,31 @@ const CarritoPage = ({ carrito, setCarrito, toros, onCheckout, onContinueShoppin
     setCarrito(carrito.filter(item => item.toroId !== toroId));
   };
   
-  const subtotal = carrito.reduce((sum, item) => {
-    const toro = getToro(item.toroId);
-    return sum + (toro?.precioVenta || 0) * item.cantidad;
-  }, 0);
+  // Calcular totales con descuentos
+  const calcularTotales = () => {
+    let subtotalSinDescuento = 0;
+    let totalDescuentos = 0;
+    
+    carrito.forEach(item => {
+      const toro = getToro(item.toroId);
+      if (toro) {
+        const precioOriginal = toro.precioVenta * item.cantidad;
+        const descuento = getDescuentoAplicable(toro, item.cantidad);
+        const montoDescuento = precioOriginal * (descuento / 100);
+        
+        subtotalSinDescuento += precioOriginal;
+        totalDescuentos += montoDescuento;
+      }
+    });
+    
+    return {
+      subtotalSinDescuento,
+      totalDescuentos,
+      total: subtotalSinDescuento - totalDescuentos
+    };
+  };
+  
+  const totales = calcularTotales();
   
   if (carrito.length === 0) {
     return (
@@ -7352,6 +7438,10 @@ const CarritoPage = ({ carrito, setCarrito, toros, onCheckout, onContinueShoppin
           const toro = getToro(item.toroId);
           if (!toro) return null;
           
+          const descuento = getDescuentoAplicable(toro, item.cantidad);
+          const precioOriginal = toro.precioVenta * item.cantidad;
+          const precioConDescuento = precioOriginal * (1 - descuento / 100);
+          
           return (
             <div key={item.toroId} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
               <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -7367,7 +7457,14 @@ const CarritoPage = ({ carrito, setCarrito, toros, onCheckout, onContinueShoppin
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-900">{toro.nombre}</h3>
                 <p className="text-sm text-gray-500">{toro.codigo} • {toro.raza}</p>
-                <p className="text-emerald-600 font-medium">{formatCurrency(toro.precioVenta)} c/u</p>
+                <p className="text-emerald-600 font-medium">
+                  {formatCurrency(toro.precioVenta)} c/u
+                  {descuento > 0 && (
+                    <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                      -{descuento}% desc.
+                    </span>
+                  )}
+                </p>
               </div>
               
               <div className="flex items-center gap-2">
@@ -7386,8 +7483,15 @@ const CarritoPage = ({ carrito, setCarrito, toros, onCheckout, onContinueShoppin
                 </button>
               </div>
               
-              <div className="text-right">
-                <p className="font-bold text-gray-900">{formatCurrency(toro.precioVenta * item.cantidad)}</p>
+              <div className="text-right min-w-[100px]">
+                {descuento > 0 ? (
+                  <>
+                    <p className="text-sm text-gray-400 line-through">{formatCurrency(precioOriginal)}</p>
+                    <p className="font-bold text-emerald-600">{formatCurrency(precioConDescuento)}</p>
+                  </>
+                ) : (
+                  <p className="font-bold text-gray-900">{formatCurrency(precioOriginal)}</p>
+                )}
                 <button
                   onClick={() => removeItem(item.toroId)}
                   className="text-sm text-red-500 hover:text-red-700"
@@ -7402,9 +7506,22 @@ const CarritoPage = ({ carrito, setCarrito, toros, onCheckout, onContinueShoppin
       
       {/* Resumen */}
       <div className="bg-gray-50 rounded-xl p-6">
+        {totales.totalDescuentos > 0 && (
+          <>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="text-gray-500">{formatCurrency(totales.subtotalSinDescuento)}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-orange-600">Descuentos aplicados</span>
+              <span className="text-orange-600 font-medium">-{formatCurrency(totales.totalDescuentos)}</span>
+            </div>
+            <hr className="my-3 border-gray-200" />
+          </>
+        )}
         <div className="flex justify-between items-center mb-4">
-          <span className="text-gray-600">Subtotal</span>
-          <span className="text-xl font-bold text-gray-900">{formatCurrency(subtotal)}</span>
+          <span className="text-gray-900 font-medium">Total</span>
+          <span className="text-2xl font-bold text-emerald-600">{formatCurrency(totales.total)}</span>
         </div>
         <p className="text-sm text-gray-500 mb-4">
           * El envío y método de pago se coordinarán después de enviar tu pedido
@@ -7437,10 +7554,41 @@ const CheckoutPage = ({ carrito, toros, onSubmit, onBack }) => {
   
   const getToro = (id) => toros.find(t => t.id === id);
   
-  const subtotal = carrito.reduce((sum, item) => {
-    const toro = getToro(item.toroId);
-    return sum + (toro?.precioVenta || 0) * item.cantidad;
-  }, 0);
+  // Calcular descuento aplicable para un toro
+  const getDescuentoAplicable = (toro, cantidad) => {
+    if (!toro?.descuentos || toro.descuentos.length === 0) return 0;
+    const descuentosOrdenados = [...toro.descuentos]
+      .filter(d => d.cantidadMinima && d.porcentaje)
+      .sort((a, b) => Number(b.cantidadMinima) - Number(a.cantidadMinima));
+    const descuentoAplicable = descuentosOrdenados.find(d => cantidad >= Number(d.cantidadMinima));
+    return descuentoAplicable ? Number(descuentoAplicable.porcentaje) : 0;
+  };
+  
+  // Calcular totales con descuentos
+  const calcularTotales = () => {
+    let subtotalSinDescuento = 0;
+    let totalDescuentos = 0;
+    
+    carrito.forEach(item => {
+      const toro = getToro(item.toroId);
+      if (toro) {
+        const precioOriginal = toro.precioVenta * item.cantidad;
+        const descuento = getDescuentoAplicable(toro, item.cantidad);
+        const montoDescuento = precioOriginal * (descuento / 100);
+        
+        subtotalSinDescuento += precioOriginal;
+        totalDescuentos += montoDescuento;
+      }
+    });
+    
+    return {
+      subtotalSinDescuento,
+      totalDescuentos,
+      total: subtotalSinDescuento - totalDescuentos
+    };
+  };
+  
+  const totales = calcularTotales();
   
   const validate = () => {
     const newErrors = {};
@@ -7577,18 +7725,38 @@ const CheckoutPage = ({ carrito, toros, onSubmit, onBack }) => {
               {carrito.map(item => {
                 const toro = getToro(item.toroId);
                 if (!toro) return null;
+                const descuento = getDescuentoAplicable(toro, item.cantidad);
+                const precioOriginal = toro.precioVenta * item.cantidad;
+                const precioFinal = precioOriginal * (1 - descuento / 100);
                 return (
-                  <div key={item.toroId} className="flex justify-between text-sm">
-                    <span className="text-gray-600">{toro.nombre} x{item.cantidad}</span>
-                    <span className="font-medium">{formatCurrency(toro.precioVenta * item.cantidad)}</span>
+                  <div key={item.toroId} className="text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{toro.nombre} x{item.cantidad}</span>
+                      {descuento > 0 ? (
+                        <span className="font-medium text-emerald-600">{formatCurrency(precioFinal)}</span>
+                      ) : (
+                        <span className="font-medium">{formatCurrency(precioOriginal)}</span>
+                      )}
+                    </div>
+                    {descuento > 0 && (
+                      <div className="flex justify-end">
+                        <span className="text-xs text-orange-600">(-{descuento}% desc.)</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
             <div className="border-t border-gray-200 pt-4">
+              {totales.totalDescuentos > 0 && (
+                <div className="flex justify-between items-center mb-2 text-sm">
+                  <span className="text-orange-600">Ahorro total</span>
+                  <span className="text-orange-600 font-medium">-{formatCurrency(totales.totalDescuentos)}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center mb-4">
                 <span className="font-medium text-gray-900">Total</span>
-                <span className="text-2xl font-bold text-emerald-600">{formatCurrency(subtotal)}</span>
+                <span className="text-2xl font-bold text-emerald-600">{formatCurrency(totales.total)}</span>
               </div>
               <button
                 onClick={handleSubmit}
@@ -7708,6 +7876,18 @@ const TiendaApp = ({ toros, inventory, onAdminClick, onPedidoCreado }) => {
   });
   const [ultimoPedido, setUltimoPedido] = useState(null);
   
+  const getToro = (id) => toros.find(t => t.id === id);
+  
+  // Calcular descuento aplicable para un toro
+  const getDescuentoAplicable = (toro, cantidad) => {
+    if (!toro?.descuentos || toro.descuentos.length === 0) return 0;
+    const descuentosOrdenados = [...toro.descuentos]
+      .filter(d => d.cantidadMinima && d.porcentaje)
+      .sort((a, b) => Number(b.cantidadMinima) - Number(a.cantidadMinima));
+    const descuentoAplicable = descuentosOrdenados.find(d => cantidad >= Number(d.cantidadMinima));
+    return descuentoAplicable ? Number(descuentoAplicable.porcentaje) : 0;
+  };
+  
   // Guardar carrito en localStorage
   useEffect(() => {
     localStorage.setItem('gensemen_carrito', JSON.stringify(carrito));
@@ -7728,16 +7908,28 @@ const TiendaApp = ({ toros, inventory, onAdminClick, onPedidoCreado }) => {
   };
   
   const handleCheckout = async (formData) => {
+    // Calcular items con descuentos
+    const itemsConDescuento = carrito.map(item => {
+      const toro = getToro(item.toroId);
+      const descuento = getDescuentoAplicable(toro, item.cantidad);
+      const precioConDescuento = item.precioUnitario * (1 - descuento / 100);
+      return {
+        toroId: item.toroId,
+        cantidad: item.cantidad,
+        precioUnitario: item.precioUnitario,
+        descuento: descuento,
+        precioFinal: precioConDescuento
+      };
+    });
+    
+    const total = itemsConDescuento.reduce((sum, item) => sum + item.cantidad * item.precioFinal, 0);
+    
     const pedido = {
       id: `PED-${Date.now()}`,
       fecha: new Date().toISOString().split('T')[0],
       cliente: formData,
-      items: carrito.map(item => ({
-        toroId: item.toroId,
-        cantidad: item.cantidad,
-        precioUnitario: item.precioUnitario
-      })),
-      total: carrito.reduce((sum, item) => sum + item.cantidad * item.precioUnitario, 0),
+      items: itemsConDescuento,
+      total: total,
       estado: 'pendiente',
       creadoEn: new Date().toISOString()
     };
@@ -7805,6 +7997,8 @@ const TiendaApp = ({ toros, inventory, onAdminClick, onPedidoCreado }) => {
 const PedidosOnlineModule = ({ pedidos, setPedidos, toros, clientes, setClientes, ventas, setVentas, inventory, setInventory, cxc, setCxc }) => {
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [filterEstado, setFilterEstado] = useState('todos');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successInfo, setSuccessInfo] = useState({ ventaId: null, cxcId: null, total: 0 });
   
   const getToro = (id) => toros.find(t => t.id === id);
   
@@ -7847,7 +8041,8 @@ const PedidosOnlineModule = ({ pedidos, setPedidos, toros, clientes, setClientes
       items: pedido.items.map(item => ({
         toroId: item.toroId,
         cantidad: item.cantidad,
-        precioUnitario: item.precioUnitario
+        precioUnitario: item.precioFinal || item.precioUnitario, // Usa precio con descuento si existe
+        descuento: item.descuento || 0
       })),
       total: pedido.total,
       estado: 'pendiente',
@@ -7891,7 +8086,8 @@ const PedidosOnlineModule = ({ pedidos, setPedidos, toros, clientes, setClientes
     ));
     
     setSelectedPedido(null);
-    alert('Pedido confirmado exitosamente. Se creó la venta, se descontó inventario y se generó cuenta por cobrar.');
+    setSuccessInfo({ ventaId: venta.id, cxcId: nuevaCxc.id, total: pedido.total });
+    setShowSuccessModal(true);
   };
   
   const handleCambiarEstado = (pedidoId, nuevoEstado) => {
@@ -8034,6 +8230,9 @@ const PedidosOnlineModule = ({ pedidos, setPedidos, toros, clientes, setClientes
               <div className="border border-gray-200 rounded-lg divide-y divide-gray-200">
                 {selectedPedido.items.map((item, idx) => {
                   const toro = getToro(item.toroId);
+                  const tieneDescuento = item.descuento && item.descuento > 0;
+                  const precioOriginal = item.cantidad * item.precioUnitario;
+                  const precioFinal = tieneDescuento ? item.cantidad * item.precioFinal : precioOriginal;
                   return (
                     <div key={idx} className="p-3 flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -8050,8 +8249,22 @@ const PedidosOnlineModule = ({ pedidos, setPedidos, toros, clientes, setClientes
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{item.cantidad} x {formatCurrency(item.precioUnitario)}</p>
-                        <p className="text-sm text-gray-500">{formatCurrency(item.cantidad * item.precioUnitario)}</p>
+                        <p className="font-medium">
+                          {item.cantidad} x {formatCurrency(item.precioUnitario)}
+                          {tieneDescuento && (
+                            <span className="ml-1 text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
+                              -{item.descuento}%
+                            </span>
+                          )}
+                        </p>
+                        {tieneDescuento ? (
+                          <>
+                            <p className="text-xs text-gray-400 line-through">{formatCurrency(precioOriginal)}</p>
+                            <p className="text-sm text-emerald-600 font-medium">{formatCurrency(precioFinal)}</p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-gray-500">{formatCurrency(precioOriginal)}</p>
+                        )}
                       </div>
                     </div>
                   );
@@ -8112,6 +8325,43 @@ const PedidosOnlineModule = ({ pedidos, setPedidos, toros, clientes, setClientes
           </div>
         )}
       </Modal>
+      
+      {/* Modal de Éxito */}
+      <Modal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} title="" size="sm">
+        <div className="text-center py-4">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Icons.CheckCircle className="w-8 h-8 text-emerald-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">¡Pedido Confirmado!</h3>
+          <p className="text-gray-600 mb-4">El pedido ha sido procesado exitosamente.</p>
+          
+          <div className="bg-gray-50 rounded-lg p-4 mb-4 text-left">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Venta creada:</span>
+                <span className="font-medium text-gray-900">#{successInfo.ventaId}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Cuenta por cobrar:</span>
+                <span className="font-medium text-gray-900">#{successInfo.cxcId}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Total:</span>
+                <span className="font-bold text-emerald-600">{formatCurrency(successInfo.total)}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-xs text-gray-500 mb-4">
+            <p>✓ Se descontó el inventario automáticamente</p>
+            <p>✓ Se generó la cuenta por cobrar</p>
+          </div>
+          
+          <Button onClick={() => setShowSuccessModal(false)} className="w-full">
+            Aceptar
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };
@@ -8125,7 +8375,7 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   
   // Forms
-  const [toroForm, setToroForm] = useState({ codigo: '', nombre: '', raza: '', precioVenta: '', fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false });
+  const [toroForm, setToroForm] = useState({ codigo: '', nombre: '', raza: '', precioVenta: '', fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false, descuentos: [] });
   const [proveedorForm, setProveedorForm] = useState({ nombre: '', contacto: '', telefono: '', email: '' });
   const [clienteForm, setClienteForm] = useState({ nombre: '', contacto: '', telefono: '', email: '' });
   const [categoriaForm, setCategoriaForm] = useState({ nombre: '', icono: 'more' });
@@ -8138,7 +8388,7 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
   ];
 
   const resetForms = () => {
-    setToroForm({ codigo: '', nombre: '', raza: '', precioVenta: '', fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false });
+    setToroForm({ codigo: '', nombre: '', raza: '', precioVenta: '', fotoUrl: '', videoUrl: '', descripcion: '', disponibleTienda: false, descuentos: [] });
     setProveedorForm({ nombre: '', contacto: '', telefono: '', email: '' });
     setClienteForm({ nombre: '', contacto: '', telefono: '', email: '' });
     setCategoriaForm({ nombre: '', icono: 'more' });
@@ -8158,7 +8408,8 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
             fotoUrl: item.fotoUrl || '',
             videoUrl: item.videoUrl || '',
             descripcion: item.descripcion || '',
-            disponibleTienda: item.disponibleTienda || false
+            disponibleTienda: item.disponibleTienda || false,
+            descuentos: item.descuentos || []
           });
           break;
         case 'proveedores':
@@ -8372,6 +8623,76 @@ const CatalogosModule = ({ toros, setToros, proveedores, setProveedores, cliente
                   className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none"
                 />
               </div>
+            </div>
+            
+            {/* Sección: Descuentos por Volumen */}
+            <div className="pb-3 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-gray-700">Descuentos por Volumen</h4>
+                <button
+                  type="button"
+                  onClick={() => setToroForm({
+                    ...toroForm, 
+                    descuentos: [...toroForm.descuentos, { cantidadMinima: '', porcentaje: '' }]
+                  })}
+                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
+                >
+                  <Icons.Plus /> Agregar rango
+                </button>
+              </div>
+              
+              {toroForm.descuentos.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">Sin descuentos configurados</p>
+              ) : (
+                <div className="space-y-2">
+                  {toroForm.descuentos.map((desc, index) => (
+                    <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                      <div className="flex-1">
+                        <label className="text-xs text-gray-500">Desde (pajillas)</label>
+                        <input
+                          type="number"
+                          value={desc.cantidadMinima}
+                          onChange={(e) => {
+                            const newDescuentos = [...toroForm.descuentos];
+                            newDescuentos[index].cantidadMinima = e.target.value;
+                            setToroForm({...toroForm, descuentos: newDescuentos});
+                          }}
+                          placeholder="Ej: 10"
+                          min="1"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-xs text-gray-500">Descuento %</label>
+                        <input
+                          type="number"
+                          value={desc.porcentaje}
+                          onChange={(e) => {
+                            const newDescuentos = [...toroForm.descuentos];
+                            newDescuentos[index].porcentaje = e.target.value;
+                            setToroForm({...toroForm, descuentos: newDescuentos});
+                          }}
+                          placeholder="Ej: 5"
+                          min="0"
+                          max="100"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newDescuentos = toroForm.descuentos.filter((_, i) => i !== index);
+                          setToroForm({...toroForm, descuentos: newDescuentos});
+                        }}
+                        className="mt-4 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                      >
+                        <Icons.Trash />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-2">Configura descuentos automáticos según la cantidad de pajillas</p>
             </div>
             
             {/* Sección: Multimedia */}
