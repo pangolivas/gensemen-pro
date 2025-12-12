@@ -1368,7 +1368,7 @@ const InventarioModule = ({ inventory, setInventory, toros, setToros }) => {
 
   const getToro = (toroId) => toros.find(t => t.id === toroId) || { codigo: '', nombre: 'Desconocido' };
 
-  // Inventario activo (excluye items con cantidad 0 o negativa)
+  // Inventario activo (excluye items con cantidad 0)
   const activeInventory = inventory.filter(item => Number(item.cantidad) > 0);
   const totalPajillas = activeInventory.reduce((sum, item) => sum + Number(item.cantidad), 0);
   const termosEnUso = [...new Set(activeInventory.map(i => i.termo))].length;
@@ -7845,13 +7845,11 @@ const TiendaFooter = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
-          <div className="flex items-center gap-3 mb-4">
-            <img 
-              src={LOGO_COMPLETO} 
-              alt="La Lagartija Cattle Co." 
-              className="h-10"
-              style={{ filter: 'brightness(0) invert(69%) sepia(52%) saturate(501%) hue-rotate(115deg) brightness(93%) contrast(89%)' }}
-            />
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">G</span>
+            </div>
+            <span className="text-white font-bold">GENSEMEN PRO</span>
           </div>
           <p className="text-sm">
             Genética bovina de calidad premium para mejorar tu hato.
@@ -7860,12 +7858,12 @@ const TiendaFooter = () => (
         <div>
           <h4 className="text-white font-medium mb-4">Contacto</h4>
           <p className="text-sm">¿Preguntas? Contáctanos</p>
-          <p className="text-sm text-emerald-400">+52 614 224 6022</p>
+          <p className="text-sm text-emerald-400">contacto@gensemen.com</p>
         </div>
         <div>
           <h4 className="text-white font-medium mb-4">Horario de Atención</h4>
           <p className="text-sm">Lunes a Viernes: 9am - 6pm</p>
-          <p className="text-sm">Sábado: 9am - 1pm</p>
+          <p className="text-sm">Sábado: 9am - 2pm</p>
         </div>
       </div>
       <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
