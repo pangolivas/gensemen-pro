@@ -7852,6 +7852,7 @@ const TiendaFooter = () => (
               className="h-10"
               style={{ filter: 'brightness(0) invert(69%) sepia(52%) saturate(501%) hue-rotate(115deg) brightness(93%) contrast(89%)' }}
             />
+            <span className="text-white font-medium">GENSEMEN PRO</span>
           </div>
           <p className="text-sm">
             Genética bovina de calidad premium para mejorar tu hato.
