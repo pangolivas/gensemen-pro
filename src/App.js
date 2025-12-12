@@ -459,6 +459,11 @@ const Icons = {
       <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20" />
     </svg>
   ),
+  RefreshCw: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+    </svg>
+  ),
   Chart: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
       <path d="M3 3v18h18M7 16l4-4 4 4 5-6" />
@@ -7045,15 +7050,9 @@ const TiendaHeader = ({ carrito, onCarritoClick, onAdminClick }) => {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <a href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">G</span>
-            </div>
-            <div>
-              <span className="text-xl font-bold text-gray-900">GENSEMEN</span>
-              <span className="text-xs text-gray-500 ml-1">PRO</span>
-            </div>
+        <div className="flex items-center justify-between h-20">
+          <a href="/" className="flex items-center gap-3">
+            <LogoCompleto className="h-14" />
           </a>
           
           <div className="flex items-center gap-4">
@@ -7112,12 +7111,22 @@ const ProductCard = ({ toro, stock, onAddToCart, onViewDetail }) => {
       {/* Imagen o Video */}
       <div className="relative aspect-[4/3] bg-gray-100">
         {showVideo && videoId ? (
-          <iframe
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          <>
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            {/* Botón para cerrar video y volver a foto */}
+            <button
+              onClick={() => setShowVideo(false)}
+              className="absolute top-2 right-2 w-8 h-8 bg-black/70 text-white rounded-full flex items-center justify-center hover:bg-black transition-colors z-10"
+              title="Cerrar video"
+            >
+              <Icons.X />
+            </button>
+          </>
         ) : toro.fotoUrl ? (
           <img 
             src={toro.fotoUrl} 
@@ -8320,6 +8329,18 @@ const PedidosOnlineModule = ({ pedidos, setPedidos, toros, clientes, setClientes
                 >
                   <Icons.CheckCircle />
                   Marcar como Entregado
+                </button>
+              )}
+              {selectedPedido.estado === 'cancelado' && (
+                <button
+                  onClick={() => {
+                    handleCambiarEstado(selectedPedido.id, 'pendiente');
+                    setSelectedPedido(null);
+                  }}
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center justify-center gap-2"
+                >
+                  <Icons.RefreshCw />
+                  Reactivar Pedido
                 </button>
               )}
             </div>
