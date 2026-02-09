@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
 // GET /api/productos - Listar todos los productos disponibles
@@ -7,33 +7,44 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const categoria = searchParams.get('categoria')
-    const disponible = searchParams.get('disponible') // true/false
+    const disponible = searchParams.get('disponible')
     
-    // Construir query base
-    let q = collection(db, 'toros')
+    // Query simple sin orderBy para evitar necesidad de índices
+    const torosRef = collection(db, 'toros')
+    let q = torosRef
     
-    // Filtrar solo productos disponibles para tienda
+    // Solo filtrar por disponibleTienda si se solicita
     if (disponible === 'true') {
-      q = query(q, where('disponibleTienda', '==', true))
+      q = query(torosRef, where('disponibleTienda', '==', true))
     }
-    
-    // Filtrar por categoría si se especifica
-    if (categoria && categoria !== 'Todos') {
-      q = query(q, where('raza', '==', categoria))
-    }
-    
-    // Ordenar por nombre
-    q = query(q, orderBy('nombre', 'asc'))
     
     const snapshot = await getDocs(q)
     
-    const productos = []
+    let productos = []
     snapshot.forEach((doc) => {
+      const data = doc.data()
       productos.push({
         id: doc.id,
-        ...doc.data()
+        nombre: data.nombre || '',
+        codigo: data.codigo || '',
+        raza: data.raza || '',
+        categoria: data.raza || '', // Usar raza como categoría
+        precio: data.precioVenta || 0,
+        descripcion: data.descripcion || '',
+        imagenUrl: data.fotoUrl || '',
+        videoUrl: data.videoUrl || '',
+        disponibleTienda: data.disponibleTienda || false,
+        activo: data.activo || false
       })
     })
+    
+    // Filtrar por categoría/raza en memoria (después de obtener los datos)
+    if (categoria && categoria !== 'Todos') {
+      productos = productos.filter(p => p.raza === categoria)
+    }
+    
+    // Ordenar por nombre en memoria
+    productos.sort((a, b) => a.nombre.localeCompare(b.nombre))
 
     return NextResponse.json({
       success: true,
@@ -60,20 +71,19 @@ export async function POST(request) {
     const body = await request.json()
     
     // Validar campos requeridos
-    const { nombre, categoria, precio, dosis } = body
+    const { nombre, raza, precio } = body
     
-    if (!nombre || !categoria || !precio || dosis === undefined) {
+    if (!nombre || !raza || !precio) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Faltan campos requeridos: nombre, categoria, precio, dosis' 
+          error: 'Faltan campos requeridos: nombre, raza, precio' 
         },
         { status: 400 }
       )
     }
 
     // Este endpoint está deshabilitado para uso externo
-    // Solo para documentación de la API
     return NextResponse.json(
       { 
         success: false, 
