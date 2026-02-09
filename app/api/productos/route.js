@@ -10,16 +10,16 @@ export async function GET(request) {
     const disponible = searchParams.get('disponible') // true/false
     
     // Construir query base
-    let q = collection(db, 'inventario')
+    let q = collection(db, 'toros')
     
-    // Filtrar solo productos con stock disponible si se especifica
+    // Filtrar solo productos disponibles para tienda
     if (disponible === 'true') {
-      q = query(q, where('dosis', '>', 0))
+      q = query(q, where('disponibleTienda', '==', true))
     }
     
     // Filtrar por categoría si se especifica
     if (categoria && categoria !== 'Todos') {
-      q = query(q, where('categoria', '==', categoria))
+      q = query(q, where('raza', '==', categoria))
     }
     
     // Ordenar por nombre
