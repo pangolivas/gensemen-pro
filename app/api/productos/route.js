@@ -1,72 +1,64 @@
 import { NextResponse } from 'next/server'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
 // GET /api/productos - Listar todos los productos disponibles
 export async function GET(request) {
   try {
-    console.log('=== INICIO API /api/productos ===')
-    
     const { searchParams } = new URL(request.url)
     const categoria = searchParams.get('categoria')
     const disponible = searchParams.get('disponible')
     
-    console.log('Parámetros recibidos:', { categoria, disponible })
-    console.log('Firebase DB existe:', !!db)
+    console.log('=== LEYENDO DOCUMENTO toros ===')
     
-    // Query simple sin orderBy para evitar necesidad de índices
-    const torosRef = collection(db, 'toros')
-    console.log('Referencia a colección toros creada')
+    // Leer el DOCUMENTO gensemen/toros
+    const torosDocRef = doc(db, 'gensemen', 'toros')
+    const torosDoc = await getDoc(torosDocRef)
     
-    let q = torosRef
+    if (!torosDoc.exists()) {
+      console.log('El documento gensemen/toros no existe')
+      return NextResponse.json({
+        success: true,
+        total: 0,
+        productos: []
+      })
+    }
     
-    // Solo filtrar por disponibleTienda si se solicita
+    const data = torosDoc.data()
+    console.log('Documento leído. Campos:', Object.keys(data))
+    
+    // El array de toros está en el campo "data"
+    let toros = data.data || []
+    console.log('Total toros en array:', toros.length)
+    
+    // Filtrar por disponibleTienda si se solicita
     if (disponible === 'true') {
-      console.log('Aplicando filtro disponibleTienda === true')
-      q = query(torosRef, where('disponibleTienda', '==', true))
-    } else {
-      console.log('Sin filtro, obteniendo todos los toros')
+      toros = toros.filter(toro => toro.disponibleTienda === true)
+      console.log('Toros después de filtrar por disponibleTienda:', toros.length)
     }
     
-    console.log('Ejecutando query a Firestore...')
-    const snapshot = await getDocs(q)
-    console.log('Query ejecutada. Documentos encontrados:', snapshot.size)
-    
-    let productos = []
-    snapshot.forEach((doc) => {
-      console.log('Procesando documento:', doc.id)
-      const data = doc.data()
-      console.log('Datos del documento:', {
-        nombre: data.nombre,
-        disponibleTienda: data.disponibleTienda,
-        activo: data.activo
-      })
-      
-      productos.push({
-        id: doc.id,
-        nombre: data.nombre || '',
-        codigo: data.codigo || '',
-        raza: data.raza || '',
-        categoria: data.raza || '',
-        precio: data.precioVenta || 0,
-        descripcion: data.descripcion || '',
-        imagenUrl: data.fotoUrl || '',
-        videoUrl: data.videoUrl || '',
-        disponibleTienda: data.disponibleTienda || false,
-        activo: data.activo || false
-      })
-    })
-    
-    console.log('Total productos procesados:', productos.length)
-    
-    // Filtrar por categoría/raza en memoria
+    // Filtrar por raza/categoría si se especifica
     if (categoria && categoria !== 'Todos') {
-      console.log('Filtrando por categoría:', categoria)
-      productos = productos.filter(p => p.raza === categoria)
-      console.log('Productos después de filtrar por categoría:', productos.length)
+      toros = toros.filter(toro => toro.raza === categoria)
+      console.log('Toros después de filtrar por categoría:', toros.length)
     }
     
-    // Ordenar por nombre en memoria
+    // Convertir a formato de productos
+    const productos = toros.map((toro, index) => ({
+      id: toro.id || String(index),
+      nombre: toro.nombre || '',
+      codigo: toro.codigo || '',
+      raza: toro.raza || '',
+      categoria: toro.raza || '',
+      precio: toro.precioVenta || 0,
+      descripcion: toro.descripcion || '',
+      imagenUrl: toro.fotoUrl || '',
+      videoUrl: toro.videoUrl || '',
+      disponibleTienda: toro.disponibleTienda || false,
+      activo: toro.activo || false
+    }))
+    
+    // Ordenar por nombre
     productos.sort((a, b) => a.nombre.localeCompare(b.nombre))
     
     console.log('=== RESPUESTA FINAL ===')
@@ -79,17 +71,12 @@ export async function GET(request) {
     })
 
   } catch (error) {
-    console.error('=== ERROR EN API ===')
-    console.error('Tipo de error:', error.constructor.name)
-    console.error('Mensaje:', error.message)
-    console.error('Stack:', error.stack)
-    
+    console.error('Error en GET /api/productos:', error)
     return NextResponse.json(
       { 
         success: false, 
         error: 'Error al obtener productos',
-        message: error.message,
-        type: error.constructor.name
+        message: error.message
       },
       { status: 500 }
     )
@@ -101,7 +88,6 @@ export async function POST(request) {
   try {
     const body = await request.json()
     
-    // Validar campos requeridos
     const { nombre, raza, precio } = body
     
     if (!nombre || !raza || !precio) {
@@ -114,7 +100,6 @@ export async function POST(request) {
       )
     }
 
-    // Este endpoint está deshabilitado para uso externo
     return NextResponse.json(
       { 
         success: false, 
