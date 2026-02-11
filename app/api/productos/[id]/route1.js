@@ -2,18 +2,6 @@ import { NextResponse } from 'next/server'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
-// Configurar cabeceras CORS
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-// Manejar peticiones OPTIONS (preflight)
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders })
-}
-
 // GET /api/productos/[id] - Obtener un producto específico por ID
 export async function GET(request, { params }) {
   try {
@@ -33,10 +21,7 @@ export async function GET(request, { params }) {
           success: false, 
           error: 'Productos no encontrados' 
         },
-        { 
-          status: 404,
-          headers: corsHeaders 
-        }
+        { status: 404 }
       )
     }
     
@@ -71,10 +56,7 @@ export async function GET(request, { params }) {
           success: false, 
           error: 'Producto no encontrado' 
         },
-        { 
-          status: 404,
-          headers: corsHeaders 
-        }
+        { status: 404 }
       )
     }
     
@@ -93,16 +75,14 @@ export async function GET(request, { params }) {
       videoUrl: toro.videoUrl || '',
       disponibleTienda: toro.disponibleTienda || false,
       activo: toro.activo || false,
+      // Campos adicionales que puedan existir
       descuentos: toro.descuentos || null
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        producto: producto
-      },
-      { headers: corsHeaders }
-    )
+    return NextResponse.json({
+      success: true,
+      producto: producto
+    })
 
   } catch (error) {
     console.error('Error en GET /api/productos/[id]:', error)
@@ -112,10 +92,7 @@ export async function GET(request, { params }) {
         error: 'Error al obtener producto',
         message: error.message 
       },
-      { 
-        status: 500,
-        headers: corsHeaders 
-      }
+      { status: 500 }
     )
   }
 }

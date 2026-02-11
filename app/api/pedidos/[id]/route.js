@@ -2,54 +2,66 @@ import { NextResponse } from 'next/server'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
-// GET /api/pedidos/[id] - Consultar estado de un pedido específico
+// Configurar cabeceras CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// Manejar peticiones OPTIONS (preflight)
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
+// GET /api/pedidos/[id] - Obtener estado de un pedido
 export async function GET(request, { params }) {
   try {
     const { id } = params
     
-    if (!id) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'ID de pedido no proporcionado' 
-        },
-        { status: 400 }
-      )
-    }
-
-    // Buscar pedido en Firebase
-    const docRef = doc(db, 'pedidos', id)
-    const docSnap = await getDoc(docRef)
-
-    if (!docSnap.exists()) {
+    console.log('=== GET pedido:', id, '===')
+    
+    const pedidoRef = doc(db, 'pedidos', id)
+    const pedidoDoc = await getDoc(pedidoRef)
+    
+    if (!pedidoDoc.exists()) {
       return NextResponse.json(
         { 
           success: false, 
           error: 'Pedido no encontrado' 
         },
-        { status: 404 }
+        { 
+          status: 404,
+          headers: corsHeaders 
+        }
       )
     }
-
+    
     const pedido = {
-      id: docSnap.id,
-      ...docSnap.data()
+      id: pedidoDoc.id,
+      ...pedidoDoc.data()
     }
-
-    return NextResponse.json({
-      success: true,
-      pedido: pedido
-    })
-
+    
+    return NextResponse.json(
+      {
+        success: true,
+        pedido: pedido
+      },
+      { headers: corsHeaders }
+    )
+    
   } catch (error) {
-    console.error(`Error en GET /api/pedidos/${params.id}:`, error)
+    console.error('Error en GET /api/pedidos/[id]:', error)
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Error al obtener pedido',
+        error: 'Error al obtener el pedido',
         message: error.message 
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders 
+      }
     )
   }
 }

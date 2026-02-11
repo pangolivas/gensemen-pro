@@ -1,89 +1,71 @@
 import { NextResponse } from 'next/server'
-import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
-// GET /api/inventario - Consultar disponibilidad de inventario
+// Configurar cabeceras CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// Manejar peticiones OPTIONS (preflight)
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
+// GET /api/inventario - Obtener disponibilidad de inventario
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const productoId = searchParams.get('producto_id')
-    const minDosis = searchParams.get('min_dosis') || '1'
+    console.log('=== GET inventario ===')
     
-    let q = collection(db, 'inventario')
+    // Leer el DOCUMENTO gensemen/toros
+    const torosDocRef = doc(db, 'gensemen', 'toros')
+    const torosDoc = await getDoc(torosDocRef)
     
-    // Si se especifica un producto específico
-    if (productoId) {
-      const docRef = doc(db, 'inventario', productoId)
-      const docSnap = await getDoc(docRef)
-      
-      if (!docSnap.exists()) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Producto no encontrado' 
-          },
-          { status: 404 }
-        )
-      }
-      
-      const producto = {
-        id: docSnap.id,
-        ...docSnap.data()
-      }
-      
-      return NextResponse.json({
+    if (!torosDoc.exists()) {
+      return NextResponse.json(
+        {
+          success: true,
+          inventario: []
+        },
+        { headers: corsHeaders }
+      )
+    }
+    
+    const data = torosDoc.data()
+    const toros = data.data || []
+    
+    // Mapear a formato de inventario simplificado
+    const inventario = toros
+      .filter(toro => toro.disponibleTienda === true)
+      .map(toro => ({
+        codigo: toro.codigo,
+        nombre: toro.nombre,
+        disponible: toro.activo === true,
+        cantidad: toro.dosis || 0
+      }))
+    
+    return NextResponse.json(
+      {
         success: true,
-        disponible: producto.dosis > 0,
-        dosis_disponibles: producto.dosis,
-        producto: {
-          id: producto.id,
-          nombre: producto.nombre,
-          dosis: producto.dosis,
-          precio: producto.precio
-        }
-      })
-    }
+        inventario: inventario
+      },
+      { headers: corsHeaders }
+    )
     
-    // Listar todos los productos con disponibilidad
-    q = query(q, where('dosis', '>=', parseInt(minDosis)))
-    
-    const snapshot = await getDocs(q)
-    
-    const inventario = []
-    snapshot.forEach((doc) => {
-      const data = doc.data()
-      inventario.push({
-        id: doc.id,
-        nombre: data.nombre,
-        categoria: data.categoria,
-        dosis: data.dosis,
-        precio: data.precio,
-        disponible: data.dosis > 0
-      })
-    })
-
-    // Resumen de inventario
-    const resumen = {
-      total_productos: inventario.length,
-      productos_disponibles: inventario.filter(p => p.disponible).length,
-      total_dosis: inventario.reduce((sum, p) => sum + (p.dosis || 0), 0)
-    }
-
-    return NextResponse.json({
-      success: true,
-      resumen: resumen,
-      inventario: inventario
-    })
-
   } catch (error) {
     console.error('Error en GET /api/inventario:', error)
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Error al consultar inventario',
+        error: 'Error al obtener inventario',
         message: error.message 
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders 
+      }
     )
   }
 }

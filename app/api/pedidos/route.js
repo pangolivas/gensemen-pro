@@ -1,146 +1,119 @@
 import { NextResponse } from 'next/server'
-import { collection, addDoc, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore'
+import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
-// POST /api/pedidos - Crear nuevo pedido desde tienda online
+// Configurar cabeceras CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// Manejar peticiones OPTIONS (preflight)
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
+// POST /api/pedidos - Crear nuevo pedido
 export async function POST(request) {
   try {
     const body = await request.json()
     
     // Validar campos requeridos
-    const { cliente, productos, total, metodoPago } = body
+    const { cliente, items, total } = body
     
-    if (!cliente || !productos || !total || !metodoPago) {
+    if (!cliente || !cliente.nombre || !cliente.email || !cliente.telefono) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Faltan campos requeridos: cliente, productos, total, metodoPago' 
+          error: 'Faltan datos del cliente (nombre, email, telefono)' 
         },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: corsHeaders 
+        }
       )
     }
-
-    // Validar estructura de cliente
-    if (!cliente.nombre || !cliente.email || !cliente.telefono) {
+    
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Datos de cliente incompletos. Se requiere: nombre, email, telefono' 
+          error: 'El pedido debe tener al menos un producto' 
         },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: corsHeaders 
+        }
       )
     }
-
-    // Validar que productos sea un array con al menos 1 item
-    if (!Array.isArray(productos) || productos.length === 0) {
+    
+    if (typeof total !== 'number' || total <= 0) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'El pedido debe contener al menos un producto' 
+          error: 'El total del pedido es inválido' 
         },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: corsHeaders 
+        }
       )
     }
-
-    // Validar estructura de cada producto
-    for (const producto of productos) {
-      if (!producto.id || !producto.nombre || !producto.cantidad || !producto.precio) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Cada producto debe tener: id, nombre, cantidad, precio' 
-          },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Crear objeto de pedido
-    const nuevoPedido = {
-      // Información del cliente
+    
+    // Crear el pedido en Firebase
+    const pedido = {
       cliente: {
         nombre: cliente.nombre,
         email: cliente.email,
-        telefono: cliente.telefono,
-        direccion: cliente.direccion || '',
-        rfc: cliente.rfc || ''
+        telefono: cliente.telefono
       },
-      
-      // Productos del pedido
-      productos: productos.map(p => ({
-        id: p.id,
-        nombre: p.nombre,
-        cantidad: p.cantidad,
-        precio: p.precio,
-        subtotal: p.cantidad * p.precio
-      })),
-      
-      // Totales
+      items: items,
       total: total,
-      
-      // Información de pago
-      metodoPago: metodoPago,
-      estadoPago: 'pendiente',
-      
-      // Información del pedido
+      notas: body.notas || '',
       estado: 'pendiente',
-      origen: 'tienda_online',
-      
-      // Fechas
-      fechaCreacion: Timestamp.now(),
-      fechaActualizacion: Timestamp.now(),
-      
-      // Notas
-      notas: body.notas || ''
+      fecha: new Date().toISOString(),
+      origen: 'landing_page'
     }
-
-    // Guardar en Firebase
-    const docRef = await addDoc(collection(db, 'pedidos'), nuevoPedido)
-
-    return NextResponse.json({
-      success: true,
-      message: 'Pedido creado exitosamente',
-      pedido: {
-        id: docRef.id,
-        ...nuevoPedido
+    
+    const pedidosRef = collection(db, 'pedidos')
+    const docRef = await addDoc(pedidosRef, pedido)
+    
+    console.log('Pedido creado:', docRef.id)
+    
+    return NextResponse.json(
+      {
+        success: true,
+        pedidoId: docRef.id,
+        message: 'Pedido creado exitosamente'
+      },
+      { 
+        status: 201,
+        headers: corsHeaders 
       }
-    }, { status: 201 })
-
+    )
+    
   } catch (error) {
     console.error('Error en POST /api/pedidos:', error)
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Error al crear pedido',
+        error: 'Error al crear el pedido',
         message: error.message 
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders 
+      }
     )
   }
 }
 
-// GET /api/pedidos - Listar pedidos (con filtros opcionales)
+// GET /api/pedidos - Listar pedidos (uso interno)
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const estado = searchParams.get('estado')
-    const clienteEmail = searchParams.get('cliente_email')
-    
-    let q = collection(db, 'pedidos')
-    
-    // Filtrar por estado si se especifica
-    if (estado) {
-      q = query(q, where('estado', '==', estado))
-    }
-    
-    // Filtrar por email de cliente si se especifica
-    if (clienteEmail) {
-      q = query(q, where('cliente.email', '==', clienteEmail))
-    }
-    
-    // Ordenar por fecha de creación (más recientes primero)
-    q = query(q, orderBy('fechaCreacion', 'desc'))
-    
+    const pedidosRef = collection(db, 'pedidos')
+    const q = query(pedidosRef, orderBy('fecha', 'desc'), limit(50))
     const snapshot = await getDocs(q)
     
     const pedidos = []
@@ -150,13 +123,16 @@ export async function GET(request) {
         ...doc.data()
       })
     })
-
-    return NextResponse.json({
-      success: true,
-      total: pedidos.length,
-      pedidos: pedidos
-    })
-
+    
+    return NextResponse.json(
+      {
+        success: true,
+        total: pedidos.length,
+        pedidos: pedidos
+      },
+      { headers: corsHeaders }
+    )
+    
   } catch (error) {
     console.error('Error en GET /api/pedidos:', error)
     return NextResponse.json(
@@ -165,7 +141,10 @@ export async function GET(request) {
         error: 'Error al obtener pedidos',
         message: error.message 
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders 
+      }
     )
   }
 }

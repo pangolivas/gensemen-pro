@@ -2,18 +2,6 @@ import { NextResponse } from 'next/server'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
-// Configurar cabeceras CORS
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-// Manejar peticiones OPTIONS (preflight)
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders })
-}
-
 // GET /api/productos - Listar todos los productos disponibles
 export async function GET(request) {
   try {
@@ -29,14 +17,11 @@ export async function GET(request) {
     
     if (!torosDoc.exists()) {
       console.log('El documento gensemen/toros no existe')
-      return NextResponse.json(
-        {
-          success: true,
-          total: 0,
-          productos: []
-        },
-        { headers: corsHeaders }
-      )
+      return NextResponse.json({
+        success: true,
+        total: 0,
+        productos: []
+      })
     }
     
     const data = torosDoc.data()
@@ -79,14 +64,11 @@ export async function GET(request) {
     console.log('=== RESPUESTA FINAL ===')
     console.log('Total productos a devolver:', productos.length)
 
-    return NextResponse.json(
-      {
-        success: true,
-        total: productos.length,
-        productos: productos
-      },
-      { headers: corsHeaders }
-    )
+    return NextResponse.json({
+      success: true,
+      total: productos.length,
+      productos: productos
+    })
 
   } catch (error) {
     console.error('Error en GET /api/productos:', error)
@@ -96,10 +78,7 @@ export async function GET(request) {
         error: 'Error al obtener productos',
         message: error.message
       },
-      { 
-        status: 500,
-        headers: corsHeaders 
-      }
+      { status: 500 }
     )
   }
 }
@@ -117,10 +96,7 @@ export async function POST(request) {
           success: false, 
           error: 'Faltan campos requeridos: nombre, raza, precio' 
         },
-        { 
-          status: 400,
-          headers: corsHeaders 
-        }
+        { status: 400 }
       )
     }
 
@@ -129,10 +105,7 @@ export async function POST(request) {
         success: false, 
         error: 'Este endpoint está reservado para uso interno' 
       },
-      { 
-        status: 403,
-        headers: corsHeaders 
-      }
+      { status: 403 }
     )
 
   } catch (error) {
@@ -143,10 +116,7 @@ export async function POST(request) {
         error: 'Error al procesar solicitud',
         message: error.message 
       },
-      { 
-        status: 500,
-        headers: corsHeaders 
-      }
+      { status: 500 }
     )
   }
 }
