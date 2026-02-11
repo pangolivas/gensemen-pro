@@ -2,26 +2,55 @@ import { NextResponse } from 'next/server'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
-// GET /api/productos/[id] - Obtener detalle de un producto específico
+// GET /api/productos/[id] - Obtener un producto específico por ID
 export async function GET(request, { params }) {
   try {
     const { id } = params
     
-    if (!id) {
+    console.log('=== GET producto individual ===')
+    console.log('ID solicitado:', id)
+    
+    // Leer el DOCUMENTO gensemen/toros
+    const torosDocRef = doc(db, 'gensemen', 'toros')
+    const torosDoc = await getDoc(torosDocRef)
+    
+    if (!torosDoc.exists()) {
+      console.log('El documento gensemen/toros no existe')
       return NextResponse.json(
         { 
           success: false, 
-          error: 'ID de producto no proporcionado' 
+          error: 'Productos no encontrados' 
         },
-        { status: 400 }
+        { status: 404 }
       )
     }
-
-    // Buscar producto en Firebase
-    const docRef = doc(db, 'inventario', id)
-    const docSnap = await getDoc(docRef)
-
-    if (!docSnap.exists()) {
+    
+    const data = torosDoc.data()
+    const toros = data.data || []
+    
+    console.log('Total toros en documento:', toros.length)
+    
+    // Buscar el toro por ID (puede ser el id del objeto o el índice)
+    let toro = null
+    
+    // Primero buscar por campo 'id'
+    toro = toros.find(t => String(t.id) === String(id))
+    
+    // Si no se encuentra, buscar por índice
+    if (!toro) {
+      const index = parseInt(id)
+      if (!isNaN(index) && index >= 0 && index < toros.length) {
+        toro = toros[index]
+      }
+    }
+    
+    // Si aún no se encuentra, buscar por código
+    if (!toro) {
+      toro = toros.find(t => t.codigo === id)
+    }
+    
+    if (!toro) {
+      console.log('Producto no encontrado con ID:', id)
       return NextResponse.json(
         { 
           success: false, 
@@ -30,10 +59,24 @@ export async function GET(request, { params }) {
         { status: 404 }
       )
     }
-
+    
+    console.log('Producto encontrado:', toro.nombre)
+    
+    // Convertir a formato de producto
     const producto = {
-      id: docSnap.id,
-      ...docSnap.data()
+      id: toro.id || id,
+      nombre: toro.nombre || '',
+      codigo: toro.codigo || '',
+      raza: toro.raza || '',
+      categoria: toro.raza || '',
+      precio: toro.precioVenta || 0,
+      descripcion: toro.descripcion || '',
+      imagenUrl: toro.fotoUrl || '',
+      videoUrl: toro.videoUrl || '',
+      disponibleTienda: toro.disponibleTienda || false,
+      activo: toro.activo || false,
+      // Campos adicionales que puedan existir
+      descuentos: toro.descuentos || null
     }
 
     return NextResponse.json({
@@ -42,7 +85,7 @@ export async function GET(request, { params }) {
     })
 
   } catch (error) {
-    console.error(`Error en GET /api/productos/${params.id}:`, error)
+    console.error('Error en GET /api/productos/[id]:', error)
     return NextResponse.json(
       { 
         success: false, 
