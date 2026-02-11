@@ -22,37 +22,24 @@ export async function GET(request, { params }) {
     console.log('=== GET producto individual ===')
     console.log('ID solicitado:', id)
     
-    // 1. Leer TOROS
+    // Leer el DOCUMENTO gensemen/toros
     const torosDocRef = doc(db, 'gensemen', 'toros')
     const torosDoc = await getDoc(torosDocRef)
     
     if (!torosDoc.exists()) {
       console.log('El documento gensemen/toros no existe')
       return NextResponse.json(
-        { success: false, error: 'Productos no encontrados' },
-        { status: 404, headers: corsHeaders }
+        { 
+          success: false, 
+          error: 'Productos no encontrados' 
+        },
+        { 
+          status: 404,
+          headers: corsHeaders 
+        }
       )
     }
     
-    // 2. Leer INVENTORY
-    const inventoryDocRef = doc(db, 'gensemen', 'inventory')
-    const inventoryDoc = await getDoc(inventoryDocRef)
-    
-    const inventoryData = inventoryDoc.exists() ? (inventoryDoc.data().data || []) : []
-    
-    // 3. Crear mapa de inventario por toroId
-    const inventarioPorToro = {}
-    inventoryData.forEach(item => {
-      const toroId = item.toroId
-      const cantidad = item.cantidad || 0
-      
-      if (!inventarioPorToro[toroId]) {
-        inventarioPorToro[toroId] = 0
-      }
-      inventarioPorToro[toroId] += cantidad
-    })
-    
-    // 4. Buscar el toro
     const data = torosDoc.data()
     const toros = data.data || []
     
@@ -80,59 +67,40 @@ export async function GET(request, { params }) {
     if (!toro) {
       console.log('Producto no encontrado con ID:', id)
       return NextResponse.json(
-        { success: false, error: 'Producto no encontrado' },
-        { status: 404, headers: corsHeaders }
+        { 
+          success: false, 
+          error: 'Producto no encontrado' 
+        },
+        { 
+          status: 404,
+          headers: corsHeaders 
+        }
       )
     }
     
     console.log('Producto encontrado:', toro.nombre)
     
-    // 5. Calcular inventario para este toro
-    const toroId = toro.id
-    const inventario = inventarioPorToro[toroId] || 0
-    
-    // Procesar descuentos: convertir strings a números
-    let descuentos = null
-    if (toro.descuentos && Array.isArray(toro.descuentos)) {
-      descuentos = toro.descuentos.map(d => ({
-        cantidadMinima: parseInt(d.cantidadMinima) || 0,
-        porcentaje: parseFloat(d.porcentaje) || 0
-      }))
-    }
-    
-    // 6. Convertir a formato de producto con inventario real
+    // Convertir a formato de producto
     const producto = {
-      // Campos básicos
-      id: toroId || id,
+      id: toro.id || id,
       nombre: toro.nombre || '',
       codigo: toro.codigo || '',
       raza: toro.raza || '',
       categoria: toro.raza || '',
-      
-      // Precio
       precio: toro.precioVenta || 0,
-      
-      // Inventario (desde inventory/data)
-      inventario: inventario,
-      stock: inventario,
-      disponible: inventario > 0,
-      
-      // Descuentos (convertidos a números)
-      descuentos: descuentos,
-      descuentosPorVolumen: descuentos,
-      
-      // Descripción y multimedia
       descripcion: toro.descripcion || '',
       imagenUrl: toro.fotoUrl || '',
       videoUrl: toro.videoUrl || '',
-      
-      // Disponibilidad
       disponibleTienda: toro.disponibleTienda || false,
-      activo: toro.activo || false
+      activo: toro.activo || false,
+      descuentos: toro.descuentos || null
     }
 
     return NextResponse.json(
-      { success: true, producto: producto },
+      {
+        success: true,
+        producto: producto
+      },
       { headers: corsHeaders }
     )
 
@@ -144,7 +112,10 @@ export async function GET(request, { params }) {
         error: 'Error al obtener producto',
         message: error.message 
       },
-      { status: 500, headers: corsHeaders }
+      { 
+        status: 500,
+        headers: corsHeaders 
+      }
     )
   }
 }

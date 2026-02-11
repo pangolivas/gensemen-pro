@@ -23,41 +23,26 @@ export async function GET(request) {
     
     console.log('=== LEYENDO DOCUMENTO toros ===')
     
-    // 1. Leer TOROS
+    // Leer el DOCUMENTO gensemen/toros
     const torosDocRef = doc(db, 'gensemen', 'toros')
     const torosDoc = await getDoc(torosDocRef)
     
     if (!torosDoc.exists()) {
       console.log('El documento gensemen/toros no existe')
       return NextResponse.json(
-        { success: true, total: 0, productos: [] },
+        {
+          success: true,
+          total: 0,
+          productos: []
+        },
         { headers: corsHeaders }
       )
     }
     
-    // 2. Leer INVENTORY
-    const inventoryDocRef = doc(db, 'gensemen', 'inventory')
-    const inventoryDoc = await getDoc(inventoryDocRef)
-    
-    const inventoryData = inventoryDoc.exists() ? (inventoryDoc.data().data || []) : []
-    console.log('Total registros de inventario:', inventoryData.length)
-    
-    // 3. Crear mapa de inventario por toroId
-    const inventarioPorToro = {}
-    inventoryData.forEach(item => {
-      const toroId = item.toroId
-      const cantidad = item.cantidad || 0
-      
-      if (!inventarioPorToro[toroId]) {
-        inventarioPorToro[toroId] = 0
-      }
-      inventarioPorToro[toroId] += cantidad
-    })
-    
-    console.log('Inventario calculado por toro:', inventarioPorToro)
-    
-    // 4. Procesar toros
     const data = torosDoc.data()
+    console.log('Documento leído. Campos:', Object.keys(data))
+    
+    // El array de toros está en el campo "data"
     let toros = data.data || []
     console.log('Total toros en array:', toros.length)
     
@@ -73,63 +58,26 @@ export async function GET(request) {
       console.log('Toros después de filtrar por categoría:', toros.length)
     }
     
-    // 5. Convertir a formato de productos con inventario real
-    const productos = toros.map((toro, index) => {
-      const toroId = toro.id
-      const inventario = inventarioPorToro[toroId] || 0
-      
-      // Procesar descuentos: convertir strings a números
-      let descuentos = null
-      if (toro.descuentos && Array.isArray(toro.descuentos)) {
-        descuentos = toro.descuentos.map(d => ({
-          cantidadMinima: parseInt(d.cantidadMinima) || 0,
-          porcentaje: parseFloat(d.porcentaje) || 0
-        }))
-      }
-      
-      return {
-        // Campos básicos
-        id: toroId || String(index),
-        nombre: toro.nombre || '',
-        codigo: toro.codigo || '',
-        raza: toro.raza || '',
-        categoria: toro.raza || '',
-        
-        // Precio
-        precio: toro.precioVenta || 0,
-        
-        // Inventario (desde inventory/data)
-        inventario: inventario,
-        stock: inventario,
-        disponible: inventario > 0,
-        
-        // Descuentos (convertidos a números)
-        descuentos: descuentos,
-        descuentosPorVolumen: descuentos,
-        
-        // Descripción y multimedia
-        descripcion: toro.descripcion || '',
-        imagenUrl: toro.fotoUrl || '',
-        videoUrl: toro.videoUrl || '',
-        
-        // Disponibilidad
-        disponibleTienda: toro.disponibleTienda || false,
-        activo: toro.activo || false
-      }
-    })
+    // Convertir a formato de productos
+    const productos = toros.map((toro, index) => ({
+      id: toro.id || String(index),
+      nombre: toro.nombre || '',
+      codigo: toro.codigo || '',
+      raza: toro.raza || '',
+      categoria: toro.raza || '',
+      precio: toro.precioVenta || 0,
+      descripcion: toro.descripcion || '',
+      imagenUrl: toro.fotoUrl || '',
+      videoUrl: toro.videoUrl || '',
+      disponibleTienda: toro.disponibleTienda || false,
+      activo: toro.activo || false
+    }))
     
     // Ordenar por nombre
     productos.sort((a, b) => a.nombre.localeCompare(b.nombre))
     
     console.log('=== RESPUESTA FINAL ===')
     console.log('Total productos a devolver:', productos.length)
-    if (productos.length > 0) {
-      console.log('Ejemplo producto 0:', {
-        nombre: productos[0].nombre,
-        inventario: productos[0].inventario,
-        descuentos: productos[0].descuentos
-      })
-    }
 
     return NextResponse.json(
       {
